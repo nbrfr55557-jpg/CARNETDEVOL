@@ -243,7 +243,7 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
 .pv-pages .a5{box-shadow:0 4px 18px rgba(0,0,0,.45);flex:none}
 #pvMeasure{position:absolute;left:-10000px;top:0;visibility:hidden}
 .a5{width:148mm;height:210mm;padding:7mm 7mm 5mm;background:#fff;color:#111;display:flex;flex-direction:column;overflow:hidden;
-  font-family:-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:6.7pt;line-height:1.22;text-align:left;
+  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:5.9pt;line-height:1.2;text-align:left;
   -webkit-print-color-adjust:exact;print-color-adjust:exact}
 .a5 *{box-sizing:border-box}
 .a5-head{flex:none;display:flex;justify-content:space-between;align-items:flex-end;gap:4mm;border-bottom:1.5px solid #111;padding-bottom:2mm;margin-bottom:3mm}
@@ -254,21 +254,21 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
 .a5c{flex:1 1 auto;min-height:0;overflow:hidden}
 .a5-foot{flex:none;display:flex;justify-content:space-between;font-size:5.8pt;color:#777;border-top:1px solid #bbb;padding-top:1mm;margin-top:1.5mm}
 .a5 .blk + .blk{margin-top:3.5mm}
-.a5 .cap{font-size:8pt;font-weight:700;margin-bottom:1.2mm}
+.a5 .cap{font-size:7.5pt;font-weight:700;margin-bottom:1.2mm}
 /* modèle « separate » + traits de 1 px : les filets fins et le modèle « collapse » disparaissent à l'impression iOS */
 .a5 table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;border-top:1px solid #666;border-left:1px solid #666}
-.a5 th{font-size:5.6pt;font-weight:600;color:#222;background:#e6e6e6;border:0;border-right:1px solid #666;border-bottom:1px solid #666;padding:.8mm .6mm;text-align:center;line-height:1.1;vertical-align:middle}
+.a5 th{font-size:5pt;font-weight:600;color:#222;background:#e6e6e6;border:0;border-right:1px solid #666;border-bottom:1px solid #666;padding:.8mm .6mm;text-align:center;line-height:1.1;vertical-align:middle}
 .a5 td{border:0;border-right:1px solid #8c8c8c;border-bottom:1px solid #8c8c8c;-webkit-hyphens:auto;hyphens:auto;padding:.8mm .7mm;vertical-align:top;overflow-wrap:anywhere}
 .a5 td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .a5 td.b{font-weight:700}
-.a5 td.fct{overflow-wrap:normal;word-break:normal;-webkit-hyphens:manual;hyphens:manual;font-size:6.2pt}
+.a5 td.fct{overflow-wrap:normal;word-break:normal;-webkit-hyphens:manual;hyphens:manual}
 .a5 tr.sim td{background:#eaf0f8}
 .a5 tr.tot td{font-weight:700;background:#f0f0f0;border-top:1.5px solid #111}
 .a5 .recap{display:grid;grid-template-columns:1fr 1fr;gap:3mm;align-items:start}
 .a5 table.rc + table.rc{margin-top:2.5mm}
 .a5 table.rc th:first-child,.a5 table.rc td:first-child{text-align:left}
 .a5 table.rc th:not(:first-child){width:16mm}
-.a5 small{font-size:5.4pt;color:#555}
+.a5 small{font-size:.82em;color:#555}
 .a5 .mute{color:#777}
 .a5 .notes p{margin:.7mm 0}
 .a5 .cert{font-size:7.5pt;font-weight:700;font-style:italic;text-align:center;margin-bottom:2mm}
@@ -405,7 +405,7 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
 
         <div class="fgroup">
           <div class="fld"><span class="flab">Appareil</span><div class="chips" id="fTypeChips"></div></div>
-          <div class="fld"><span class="flab">Numéro de l'appareil</span><input class="inp up" id="fImmat" list="dlImmat" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"></div>
+          <div class="fld"><span class="flab">Numéro de l'appareil</span><input class="inp up" inputmode="numeric" id="fImmat" list="dlImmat" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"></div>
         </div>
 
         <div class="fgroup">
@@ -496,7 +496,7 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
    une clé générique).
    Durées stockées en MINUTES entières.
    ============================================================= */
-const APP_VERSION = "1.13";
+const APP_VERSION = "1.15";
 /* tout le texte saisi est enregistré en majuscules */
 const UP = v => String(v == null ? "" : v).toLocaleUpperCase("fr-FR");
 const STORE_KEY = "carnetvol.data.v1";
@@ -1335,7 +1335,8 @@ $("fProcs").addEventListener("click", e => {
 function updateSheetMode(){
   const s = FS.simu, ed = !!UI.editingId;
   document.querySelector(".sheet-panel").classList.toggle("simu", s);
-  $("fNatureFld").hidden = s;     // pas de nature de vol en simulateur
+  $("fNatureFld").hidden = s;
+  F.immat.inputMode = s ? "text" : "numeric";   // pavé numérique pour un vol réel, clavier complet au simulateur (CPT TIGRE…)     // pas de nature de vol en simulateur
   $("fTirsGroup").hidden = s;     // munitions : vols réels uniquement
   $("sheetTitle").textContent = ed ? (s ? "Modifier la séance" : "Modifier le vol") : (s ? "Simulateur" : "Nouveau vol");
 }
@@ -1481,12 +1482,14 @@ function buildPrintPages(ym){
     content = pg.querySelector(".a5c"); tbody = null; tkind = null;
   };
   // hauteur réellement occupée, avec ~2 mm de marge de sécurité pour l'impression
-  /* colonne Fonction : un mot trop long pour la colonne est réduit plutôt que coupé */
-  const fitFct = tr => {
-    const td = tr && tr.querySelector("td.fct");
-    if (!td) return;
-    let fs = 6.2;
-    while (td.scrollWidth > td.clientWidth + 1 && fs > 3.8){ fs -= 0.3; td.style.fontSize = fs.toFixed(1) + "pt"; }
+  /* toute case dont le texte dépasse est réduite pas à pas jusqu'à tenir dans sa largeur
+     (mesure faite sur l'appareil lui-même, donc avec ses propres polices) */
+  const fitCells = root => {
+    if (!root) return;
+    root.querySelectorAll("td, th").forEach(c => {
+      let fs = parseFloat(getComputedStyle(c).fontSize), n = 0;
+      while (c.scrollWidth > c.clientWidth + 0.5 && n++ < 14){ fs *= 0.93; c.style.fontSize = fs.toFixed(2) + "px"; }
+    });
   };
   const over = () => {
     const last = content.lastElementChild;
@@ -1495,26 +1498,27 @@ function buildPrintPages(ym){
   const openTable = t => {
     content.insertAdjacentHTML("beforeend", '<div class="blk tb"><div class="cap">' + caps[t] + (started[t] ? ", suite" : "") + '</div><table class="fl">' + PR_HEAD + "<tbody></tbody></table></div>");
     tbody = content.lastElementChild.querySelector("tbody"); tkind = t;
+    fitCells(content.lastElementChild.querySelector("thead"));
   };
   newPage();
   blocks.forEach(b => {
     if (b.t){
       if (tkind !== b.t) openTable(b.t);
-      tbody.insertAdjacentHTML("beforeend", b.h); fitFct(tbody.lastElementChild);
+      tbody.insertAdjacentHTML("beforeend", b.h); fitCells(tbody.lastElementChild);
       if (over() && !(tbody.children.length === 1 && content.children.length === 1)){
         tbody.lastElementChild.remove();
         if (!tbody.children.length) tbody.closest(".tb").remove();
         newPage(); openTable(b.t);
-        tbody.insertAdjacentHTML("beforeend", b.h); fitFct(tbody.lastElementChild);
+        tbody.insertAdjacentHTML("beforeend", b.h); fitCells(tbody.lastElementChild);
       }
       started[b.t] = true;
     } else {
       tbody = null; tkind = null;
-      content.insertAdjacentHTML("beforeend", b.h);
+      content.insertAdjacentHTML("beforeend", b.h); fitCells(content.lastElementChild);
       if (over() && content.children.length > 1){
         content.lastElementChild.remove();
         newPage();
-        content.insertAdjacentHTML("beforeend", b.h);
+        content.insertAdjacentHTML("beforeend", b.h); fitCells(content.lastElementChild);
       }
     }
   });
