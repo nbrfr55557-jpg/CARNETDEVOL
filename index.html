@@ -185,6 +185,9 @@ textarea.inp{min-height:110px;resize:vertical;line-height:1.4}
 .fgroup{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-md);padding:12px 14px 14px;margin-bottom:14px}
 .fgroup.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .fld + .fld{margin-top:14px}
+.up{text-transform:uppercase}
+.fld.bad > .flab{color:var(--bad)}
+.fld.bad .chip{border-color:rgba(232,113,95,.75)}
 .flab{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);margin-bottom:6px}
 .flab i{display:inline-block;width:8px;height:8px;border-radius:2px}
 input[type="date"].inp{min-height:46px;display:block}
@@ -225,8 +228,8 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
 .toast{position:fixed;left:50%;bottom:calc(var(--tabbar) + env(safe-area-inset-bottom) + 84px);transform:translate(-50%,16px);opacity:0;pointer-events:none;background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:999px;font-weight:650;font-size:15px;display:flex;gap:16px;align-items:center;transition:opacity .2s,transform .2s;z-index:30;max-width:calc(100% - 32px);white-space:nowrap}
 .toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 .toast button{color:#6b5a26;font-weight:800}
-.upd{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top) + 8px);z-index:40;background:var(--sand);color:var(--on-sand);border-radius:var(--r-md);padding:10px 10px 10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.45);transform:translateY(-160%);transition:transform .3s}
-.upd.show{transform:none}
+.upd{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top) + 8px);z-index:40;background:var(--sand);color:var(--on-sand);border-radius:var(--r-md);padding:10px 10px 10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.45);transform:translateY(calc(-100% - env(safe-area-inset-top) - 24px));visibility:hidden;transition:transform .3s,visibility 0s linear .3s}
+.upd.show{transform:none;visibility:visible;transition:transform .3s,visibility 0s}
 .upd p{flex:1;font-size:15px;font-weight:650}
 .upd .go{font-weight:800;padding:8px 12px;border-radius:8px;background:rgba(0,0,0,.12)}
 .upd .x{font-size:22px;line-height:1;padding:6px 8px}
@@ -243,22 +246,24 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
   font-family:-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:6.7pt;line-height:1.22;text-align:left;
   -webkit-print-color-adjust:exact;print-color-adjust:exact}
 .a5 *{box-sizing:border-box}
-.a5-head{flex:none;display:flex;justify-content:space-between;align-items:flex-end;gap:4mm;border-bottom:.8pt solid #111;padding-bottom:2mm;margin-bottom:3mm}
+.a5-head{flex:none;display:flex;justify-content:space-between;align-items:flex-end;gap:4mm;border-bottom:1.5px solid #111;padding-bottom:2mm;margin-bottom:3mm}
 .a5-head .k{font-size:6.5pt;color:#555;margin-bottom:.8mm}
 .a5-head h1{font-size:16pt;font-weight:700;letter-spacing:-.01em;line-height:1}
 .a5-head .r{text-align:right;color:#333}
 .a5-head.sm{align-items:baseline;font-size:8pt;padding-bottom:1.2mm;margin-bottom:2.5mm}
 .a5c{flex:1 1 auto;min-height:0;overflow:hidden}
-.a5-foot{flex:none;display:flex;justify-content:space-between;font-size:5.8pt;color:#777;border-top:.4pt solid #bbb;padding-top:1mm;margin-top:1.5mm}
+.a5-foot{flex:none;display:flex;justify-content:space-between;font-size:5.8pt;color:#777;border-top:1px solid #bbb;padding-top:1mm;margin-top:1.5mm}
 .a5 .blk + .blk{margin-top:3.5mm}
 .a5 .cap{font-size:8pt;font-weight:700;margin-bottom:1.2mm}
-.a5 table{width:100%;border-collapse:collapse;table-layout:fixed}
-.a5 th{font-size:5.6pt;font-weight:600;color:#222;background:#e6e6e6;border:.4pt solid #8a8a8a;padding:.8mm .6mm;text-align:center;line-height:1.1;vertical-align:middle}
-.a5 td{border:.4pt solid #a8a8a8;padding:.8mm .7mm;vertical-align:top;overflow-wrap:anywhere}
+/* modèle « separate » + traits de 1 px : les filets fins et le modèle « collapse » disparaissent à l'impression iOS */
+.a5 table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;border-top:1px solid #666;border-left:1px solid #666}
+.a5 th{font-size:5.6pt;font-weight:600;color:#222;background:#e6e6e6;border:0;border-right:1px solid #666;border-bottom:1px solid #666;padding:.8mm .6mm;text-align:center;line-height:1.1;vertical-align:middle}
+.a5 td{border:0;border-right:1px solid #8c8c8c;border-bottom:1px solid #8c8c8c;-webkit-hyphens:auto;hyphens:auto;padding:.8mm .7mm;vertical-align:top;overflow-wrap:anywhere}
 .a5 td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .a5 td.b{font-weight:700}
+.a5 td.fct{overflow-wrap:normal;word-break:normal;-webkit-hyphens:manual;hyphens:manual;font-size:6.2pt}
 .a5 tr.sim td{background:#eaf0f8}
-.a5 tr.tot td{font-weight:700;background:#f0f0f0;border-top:.9pt solid #111}
+.a5 tr.tot td{font-weight:700;background:#f0f0f0;border-top:1.5px solid #111}
 .a5 .recap{display:grid;grid-template-columns:1fr 1fr;gap:3mm;align-items:start}
 .a5 table.rc + table.rc{margin-top:2.5mm}
 .a5 table.rc th:first-child,.a5 table.rc td:first-child{text-align:left}
@@ -268,7 +273,7 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
 .a5 .notes p{margin:.7mm 0}
 .a5 .cert{font-size:7.5pt;font-weight:700;font-style:italic;text-align:center;margin-bottom:2mm}
 .a5 .sig{display:grid;grid-template-columns:1fr 1fr;gap:4mm}
-.a5 .sig div{height:24mm;border:.6pt solid #555;border-radius:1mm;padding:1.2mm 1.6mm;font-size:6.5pt;color:#333}
+.a5 .sig div{height:24mm;border:1px solid #555;border-radius:1mm;padding:1.2mm 1.6mm;font-size:6.5pt;color:#333}
 @page{size:A5 portrait;margin:0}
 @media print{
   html,body{background:#fff!important;min-height:0!important;overflow:visible!important;height:auto!important}
@@ -321,7 +326,7 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
     <div class="card" style="margin-top:4px">
       <h2>Impression mensuelle A5</h2>
       <label class="field"><span>Mois à imprimer</span><select class="select" id="prMonth"></select></label>
-      <label class="field"><span>Nom en tête de page (facultatif)</span><input class="inp" id="prName" autocomplete="off" autocorrect="off" spellcheck="false"></label>
+      <label class="field"><span>Nom en tête de page (facultatif)</span><input class="inp up" id="prName" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"></label>
       <button class="btn primary" id="prGo" type="button">Aperçu avant impression</button>
       <p class="note">Vols et séances simulateur du mois, récapitulatif du mois et cumul de l'année. Format A5 (148 × 210 mm) : sur une imprimante chargée en A4, chaque page s'imprime en haut de la feuille, il suffit de découper.</p>
     </div>
@@ -341,10 +346,10 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
 
     <div class="card">
       <h2>Listes de saisie</h2>
-      <label class="field"><span>Appareils, un par ligne</span><textarea class="inp" id="sTypes" rows="3"></textarea></label>
-      <label class="field"><span>Fonctions à bord</span><textarea class="inp" id="sFonctions" rows="6"></textarea></label>
-      <label class="field"><span>Natures de vol</span><textarea class="inp" id="sNatures" rows="7"></textarea></label>
-      <label class="field"><span>Procédures</span><textarea class="inp" id="sProcs" rows="5"></textarea></label>
+      <label class="field"><span>Appareils, un par ligne</span><textarea class="inp up" autocapitalize="characters" autocorrect="off" spellcheck="false" id="sTypes" rows="3"></textarea></label>
+      <label class="field"><span>Fonctions à bord</span><textarea class="inp up" autocapitalize="characters" autocorrect="off" spellcheck="false" id="sFonctions" rows="6"></textarea></label>
+      <label class="field"><span>Natures de vol</span><textarea class="inp up" autocapitalize="characters" autocorrect="off" spellcheck="false" id="sNatures" rows="7"></textarea></label>
+      <label class="field"><span>Procédures</span><textarea class="inp up" autocapitalize="characters" autocorrect="off" spellcheck="false" id="sProcs" rows="5"></textarea></label>
       <p class="note">Enregistrement automatique pendant la saisie. Modifier une liste ne renomme pas les vols déjà saisis.</p>
     </div>
 
@@ -400,17 +405,17 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
 
         <div class="fgroup">
           <div class="fld"><span class="flab">Appareil</span><div class="chips" id="fTypeChips"></div></div>
-          <div class="fld"><span class="flab">Numéro de l'appareil</span><input class="inp" id="fImmat" list="dlImmat" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"></div>
+          <div class="fld"><span class="flab">Numéro de l'appareil</span><input class="inp up" id="fImmat" list="dlImmat" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"></div>
         </div>
 
         <div class="fgroup">
-          <div class="fld"><span class="flab">Fonction à bord</span><div class="chips" id="fFonctionChips"></div></div>
+          <div class="fld" id="fFonctionFld"><span class="flab">Fonction à bord</span><div class="chips" id="fFonctionChips"></div></div>
           <div class="fld" id="fNatureFld"><span class="flab">Nature du vol</span><div class="chips" id="fNatureChips"></div></div>
         </div>
 
         <div class="fgroup">
-          <div class="fld"><span class="flab">Mission</span><input class="inp" id="fMission" list="dlMission" autocomplete="off" autocorrect="off" spellcheck="false"></div>
-          <div class="fld"><span class="flab">Autre membre d'équipage</span><input class="inp" id="fEquip" list="dlEquip" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false"></div>
+          <div class="fld"><span class="flab">Mission</span><input class="inp up" id="fMission" list="dlMission" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"></div>
+          <div class="fld"><span class="flab">Autre membre d'équipage</span><input class="inp up" id="fEquip" list="dlEquip" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"></div>
         </div>
 
         <div class="fgroup">
@@ -443,7 +448,7 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
         </div>
 
         <div class="fgroup">
-          <label class="fld"><span class="flab">Remarques</span><textarea class="inp" id="fRem" rows="3"></textarea></label>
+          <label class="fld"><span class="flab">Remarques</span><textarea class="inp up" id="fRem" rows="3" autocapitalize="characters"></textarea></label>
         </div>
 
         <button class="btn danger" id="fDelete" type="button" hidden>Supprimer ce vol</button>
@@ -491,7 +496,9 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
    une clé générique).
    Durées stockées en MINUTES entières.
    ============================================================= */
-const APP_VERSION = "1.12";
+const APP_VERSION = "1.13";
+/* tout le texte saisi est enregistré en majuscules */
+const UP = v => String(v == null ? "" : v).toLocaleUpperCase("fr-FR");
 const STORE_KEY = "carnetvol.data.v1";
 const DEFAULTS = {
   types: ["Tigre HAD", "Cougar NG AS532", "H120"],
@@ -554,13 +561,13 @@ const fmtDur = fmtDec;
 /* ---------- stockage ---------- */
 function normSettings(s){
   const o = {objectif12: DEFAULTS.objectif12, seed: {}};
-  LIST_KEYS.forEach(k => { o[k] = DEFAULTS[k].slice(); });
+  LIST_KEYS.forEach(k => { o[k] = DEFAULTS[k].map(UP); });
   SEEDS.forEach(([k]) => { const v = s && s.seed && s.seed[k]; o.seed[k] = ISO_RE.test(v || "") ? v : ""; });
-  o.printName = s && typeof s.printName === "string" ? s.printName.trim().slice(0, 80) : "";
+  o.printName = s && typeof s.printName === "string" ? UP(s.printName.trim()).slice(0, 80) : "";
   if (s && typeof s === "object"){
     LIST_KEYS.forEach(k => {
       if (Array.isArray(s[k])){
-        const v = [...new Set(s[k].map(x => String(x).trim()).filter(Boolean))];
+        const v = [...new Set(s[k].map(x => UP(String(x).trim())).filter(Boolean))];
         if (v.length || k === "procedures") o[k] = v;
       }
     });
@@ -577,14 +584,14 @@ function normFlight(o){
   const legacy = o.jour == null && o.total != null;
   const nuit = n(o.nuit);
   const proc = {};
-  if (o.proc && typeof o.proc === "object") Object.keys(o.proc).forEach(k => { const v = n(o.proc[k]); if (v && s(k)) proc[s(k)] = Math.min(v, 99); });
+  if (o.proc && typeof o.proc === "object") Object.keys(o.proc).forEach(k => { const v = n(o.proc[k]); if (v && s(k)) proc[UP(s(k))] = Math.min(v, 99); });
   const f = {
     id: s(o.id) || uid(), date: o.date, simu: !!o.simu,
-    type: s(o.type), immat: s(o.immat), fonction: s(o.fonction), nature: s(o.nature),
-    mission: s(o.mission), equipier: s(o.equipier),
+    type: UP(s(o.type)), immat: UP(s(o.immat)), fonction: UP(s(o.fonction)), nature: UP(s(o.nature)),
+    mission: UP(s(o.mission)), equipier: UP(s(o.equipier)),
     jour: legacy ? Math.max(0, n(o.total) - nuit) : n(o.jour), voltac: n(o.voltac),
     nuit, sil: n(legacy ? o.jvn : o.sil), vtn: n(o.vtn), vsv: n(o.vsv),
-    proc, tirs: {}, rem: s(o.rem),
+    proc, tirs: {}, rem: UP(s(o.rem)),
     tests: Array.isArray(o.tests) ? [...new Set(o.tests.filter(t => TEST_KEYS.includes(t)))] : [], pu: !!o.pu,
     createdAt: s(o.createdAt) || now, updatedAt: s(o.updatedAt) || s(o.createdAt) || now
   };
@@ -1007,7 +1014,7 @@ function renderSettings(){
     DB.flights = []; persist(); renderSettings(); toast("Tous les vols ont été effacés");
   });
 }
-function parseLines(v){ return [...new Set(v.split("\n").map(x => x.trim()).filter(Boolean))]; }
+function parseLines(v){ return [...new Set(v.split("\n").map(x => UP(x.trim())).filter(Boolean))]; }
 
 async function exportJSON(){
   const payload = {app: "carnet-de-vol", format: 2, exportedAt: new Date().toISOString(), settings: DB.settings, flights: DB.flights};
@@ -1154,7 +1161,7 @@ function openForm(id, simuNew){
   else {
     const last = DB.flights.slice().sort((x, y) => (y.createdAt || "").localeCompare(x.createdAt || ""))[0];
     b = {date: todayISO(), simu: !!simuNew, type: last ? last.type : (DB.settings.types[0] || ""), immat: "",
-         fonction: last ? last.fonction : "", nature: last ? last.nature : "", mission: "", equipier: "",
+         fonction: "", nature: "", mission: "", equipier: "",   // fonction et nature à choisir à chaque saisie
          jour: 0, voltac: 0, nuit: 0, sil: 0, vtn: 0, vsv: 0, proc: {}, rem: ""};
   }
   F.date.value = b.date; FS.simu = !!b.simu;
@@ -1168,6 +1175,7 @@ function openForm(id, simuNew){
   buildChips($("fNatureChips"), DB.settings.natures, FS.nature, "nature");
   F.immat.value = b.immat || ""; F.mission.value = b.mission || ""; F.equip.value = b.equipier || ""; F.rem.value = b.rem || "";
   F.mission.classList.remove("bad"); F.equip.classList.remove("bad");
+  $("fFonctionFld").classList.remove("bad"); $("fNatureFld").classList.remove("bad");
   DUR_KEYS.forEach(k => { F[k].value = b[k] ? fmtDec(b[k]) : ""; });
   buildProcs(b.proc || {});
   $("fErr").hidden = true;
@@ -1193,13 +1201,15 @@ function saveForm(){
   const f = {
     date: F.date.value, simu: FS.simu, type: FS.type, immat: F.immat.value.trim().toUpperCase(),
     fonction: FS.fonction, nature: FS.simu ? "" : FS.nature, tirs: FS.simu ? {} : readTirs(),
-    tests: TEST_KEYS.filter(k => FS.tests.includes(k)), pu: F.pu.checked, mission: F.mission.value.trim(), equipier: F.equip.value.trim(),
+    tests: TEST_KEYS.filter(k => FS.tests.includes(k)), pu: F.pu.checked, mission: UP(F.mission.value.trim()), equipier: UP(F.equip.value.trim()),
     jour: d.jour.min, voltac: d.voltac.min, nuit: d.nuit.min, sil: d.sil.min, vtn: d.vtn.min, vsv: d.vsv.min,
-    total: c.tot, proc, rem: F.rem.value.trim()
+    total: c.tot, proc, rem: UP(F.rem.value.trim())
   };
   const errs = [];
   if (!/^\d{4}-\d{2}-\d{2}$/.test(f.date)) errs.push("Indiquez la date du vol.");
   if (!f.type) errs.push("Choisissez l'appareil.");
+  if (!f.fonction){ errs.push("Choisissez la fonction à bord."); $("fFonctionFld").classList.add("bad"); }
+  if (!FS.simu && !f.nature){ errs.push("Choisissez la nature du vol."); $("fNatureFld").classList.add("bad"); }
   /* mission et équipier obligatoires, en vol comme au simulateur */
   if (!f.mission){ errs.push("Indiquez la mission."); F.mission.classList.add("bad"); }
   if (!f.equipier){ errs.push("Indiquez l'autre membre d'équipage."); F.equip.classList.add("bad"); }
@@ -1271,7 +1281,7 @@ function saveLists(showToast){
 }
 ["sTypes", "sFonctions", "sNatures", "sProcs"].forEach(id => {
   $(id).addEventListener("input", () => { clearTimeout(listTimer); listTimer = setTimeout(() => saveLists(false), 500); });
-  $(id).addEventListener("change", () => saveLists(true));
+  $(id).addEventListener("change", () => { saveLists(true); $(id).value = UP($(id).value); });
 });
 $("seedGrid").innerHTML = SEEDS.map(([k, l]) => '<label class="field"><span>' + l + '</span><input class="inp" type="date" id="seed_' + k + '"></label>').join("");
 $("seedGrid").addEventListener("change", e => {
@@ -1291,6 +1301,7 @@ $("fSave").addEventListener("click", saveForm);
   const c = e.target.closest(".chip"); if (!c) return;
   const host = e.currentTarget, key = host.dataset.key, v = c.dataset.v;
   FS[key] = (FS[key] === v && key !== "type") ? "" : v;
+  if (FS[key]) host.closest(".fld").classList.remove("bad");
   host.querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", x.dataset.v === FS[key]));
   if (key === "type") fillDatalists();
 }));
@@ -1302,6 +1313,8 @@ DUR_KEYS.forEach(k => {
   });
 });
 [F.mission, F.equip].forEach(el => el.addEventListener("input", () => el.classList.remove("bad")));
+/* le champ affiche déjà en majuscules (CSS) ; la valeur est convertie en quittant le champ */
+[F.immat, F.mission, F.equip, F.rem].forEach(el => el.addEventListener("change", () => { el.value = UP(el.value); }));
 $("fTests").addEventListener("click", e => {
   const c = e.target.closest(".chip"); if (!c) return;
   const k = c.dataset.t;
@@ -1347,7 +1360,7 @@ $("chooserCancel").addEventListener("click", closeChooser);
    remplies ligne par ligne jusqu'au bas de page, puis affichées en
    aperçu et imprimées (@page A5).
    ============================================================= */
-const PR_COLS = [8.5, 16, 8.5, 28, 7, 9.5, 7, 6.5, 6.5, 6.5, 8, 22];   // mm, total 134 = 148 − 2 × 7
+const PR_COLS = [8.5, 16, 10, 26.5, 7, 9.5, 7, 6.5, 6.5, 6.5, 8, 22];   // mm, total 134 = 148 − 2 × 7
 const PR_HEAD = "<colgroup>" + PR_COLS.map(w => '<col style="width:' + w + 'mm">').join("") + "</colgroup>" +
   '<thead><tr><th rowspan="2">Date</th><th rowspan="2">Appareil</th><th rowspan="2">Fct</th><th rowspan="2">Mission, nature, équipage</th>' +
   '<th colspan="2">Jour</th><th colspan="3">Nuit</th><th rowspan="2">VSV</th><th rowspan="2">Total</th><th rowspan="2">Observations</th></tr>' +
@@ -1365,7 +1378,7 @@ function prRow(f){
   const l2 = [f.nature, f.equipier ? "avec " + f.equipier : ""].filter(Boolean).join(", ");
   const obs = [procText(f), ctrlText(f), tirShort(f)].filter(Boolean).map(esc).join(", ");
   return "<tr" + (f.simu ? ' class="sim"' : "") + "><td>" + f.date.slice(8, 10) + "/" + f.date.slice(5, 7) + "</td>" +
-    "<td>" + esc(f.type) + (f.immat ? "<br><b>" + esc(f.immat) + "</b>" : "") + "</td><td>" + esc(f.fonction) + "</td>" +
+    "<td>" + esc(f.type) + (f.immat ? "<br><b>" + esc(f.immat) + "</b>" : "") + "</td><td class=\"fct\">" + esc(f.fonction) + "</td>" +
     "<td>" + (f.mission ? "<b>" + esc(f.mission) + "</b>" + (l2 ? "<br>" : "") : "") + esc(l2) + "</td>" +
     ["jour", "voltac", "nuit", "sil", "vtn", "vsv"].map(k => '<td class="n">' + dz(f[k]) + "</td>").join("") +
     '<td class="n b">' + fmtDec(f.total) + "</td><td>" + obs + (f.rem ? (obs ? "<br>" : "") + "<i>" + esc(f.rem) + "</i>" : "") + "</td></tr>";
@@ -1468,6 +1481,13 @@ function buildPrintPages(ym){
     content = pg.querySelector(".a5c"); tbody = null; tkind = null;
   };
   // hauteur réellement occupée, avec ~2 mm de marge de sécurité pour l'impression
+  /* colonne Fonction : un mot trop long pour la colonne est réduit plutôt que coupé */
+  const fitFct = tr => {
+    const td = tr && tr.querySelector("td.fct");
+    if (!td) return;
+    let fs = 6.2;
+    while (td.scrollWidth > td.clientWidth + 1 && fs > 3.8){ fs -= 0.3; td.style.fontSize = fs.toFixed(1) + "pt"; }
+  };
   const over = () => {
     const last = content.lastElementChild;
     return !!last && last.getBoundingClientRect().bottom - content.getBoundingClientRect().top > content.clientHeight - 8;
@@ -1480,12 +1500,12 @@ function buildPrintPages(ym){
   blocks.forEach(b => {
     if (b.t){
       if (tkind !== b.t) openTable(b.t);
-      tbody.insertAdjacentHTML("beforeend", b.h);
+      tbody.insertAdjacentHTML("beforeend", b.h); fitFct(tbody.lastElementChild);
       if (over() && !(tbody.children.length === 1 && content.children.length === 1)){
         tbody.lastElementChild.remove();
         if (!tbody.children.length) tbody.closest(".tb").remove();
         newPage(); openTable(b.t);
-        tbody.insertAdjacentHTML("beforeend", b.h);
+        tbody.insertAdjacentHTML("beforeend", b.h); fitFct(tbody.lastElementChild);
       }
       started[b.t] = true;
     } else {
@@ -1521,7 +1541,7 @@ function closePrintView(){
   document.body.classList.remove("lock");
 }
 $("prMonth").addEventListener("change", e => { UI.prMonth = e.target.value; });
-$("prName").addEventListener("change", () => { DB.settings.printName = $("prName").value.trim().slice(0, 80); persist(); });
+$("prName").addEventListener("change", () => { DB.settings.printName = UP($("prName").value.trim()).slice(0, 80); $("prName").value = DB.settings.printName; persist(); });
 $("prGo").addEventListener("click", () => openPrintView($("prMonth").value));
 $("pvClose").addEventListener("click", closePrintView);
 $("pvPrint").addEventListener("click", () => {
