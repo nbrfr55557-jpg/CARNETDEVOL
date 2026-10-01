@@ -243,21 +243,21 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
 .pv-pages .a5{box-shadow:0 4px 18px rgba(0,0,0,.45);flex:none}
 #pvMeasure{position:absolute;left:-10000px;top:0;visibility:hidden}
 .a5{width:148mm;height:210mm;padding:7mm 7mm 5mm;background:#fff;color:#111;display:flex;flex-direction:column;overflow:hidden;
-  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:5.9pt;line-height:1.2;text-align:left;
+  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:5.3pt;line-height:1.2;text-align:left;
   -webkit-print-color-adjust:exact;print-color-adjust:exact}
 .a5 *{box-sizing:border-box}
 .a5-head{flex:none;display:flex;justify-content:space-between;align-items:flex-end;gap:4mm;border-bottom:1.5px solid #111;padding-bottom:2mm;margin-bottom:3mm}
-.a5-head .k{font-size:6.5pt;color:#555;margin-bottom:.8mm}
-.a5-head h1{font-size:16pt;font-weight:700;letter-spacing:-.01em;line-height:1}
+.a5-head .k{font-size:6pt;color:#555;margin-bottom:.8mm}
+.a5-head h1{font-size:14pt;font-weight:700;letter-spacing:-.01em;line-height:1}
 .a5-head .r{text-align:right;color:#333}
 .a5-head.sm{align-items:baseline;font-size:8pt;padding-bottom:1.2mm;margin-bottom:2.5mm}
 .a5c{flex:1 1 auto;min-height:0;overflow:hidden}
 .a5-foot{flex:none;display:flex;justify-content:space-between;font-size:5.8pt;color:#777;border-top:1px solid #bbb;padding-top:1mm;margin-top:1.5mm}
 .a5 .blk + .blk{margin-top:3.5mm}
-.a5 .cap{font-size:7.5pt;font-weight:700;margin-bottom:1.2mm}
+.a5 .cap{font-size:7pt;font-weight:700;margin-bottom:1.2mm}
 /* modèle « separate » + traits de 1 px : les filets fins et le modèle « collapse » disparaissent à l'impression iOS */
 .a5 table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;border-top:1px solid #666;border-left:1px solid #666}
-.a5 th{font-size:5pt;font-weight:600;color:#222;background:#e6e6e6;border:0;border-right:1px solid #666;border-bottom:1px solid #666;padding:.8mm .6mm;text-align:center;line-height:1.1;vertical-align:middle}
+.a5 th{font-size:4.5pt;font-weight:600;color:#222;background:#e6e6e6;border:0;border-right:1px solid #666;border-bottom:1px solid #666;padding:.8mm .6mm;text-align:center;line-height:1.1;vertical-align:middle}
 .a5 td{border:0;border-right:1px solid #8c8c8c;border-bottom:1px solid #8c8c8c;-webkit-hyphens:auto;hyphens:auto;padding:.8mm .7mm;vertical-align:top;overflow-wrap:anywhere}
 .a5 td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .a5 td.b{font-weight:700}
@@ -496,7 +496,7 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
    une clé générique).
    Durées stockées en MINUTES entières.
    ============================================================= */
-const APP_VERSION = "1.16";
+const APP_VERSION = "1.17";
 /* tout le texte saisi est enregistré en majuscules */
 const UP = v => String(v == null ? "" : v).toLocaleUpperCase("fr-FR");
 const STORE_KEY = "carnetvol.data.v1";
@@ -1361,7 +1361,7 @@ $("chooserCancel").addEventListener("click", closeChooser);
    remplies ligne par ligne jusqu'au bas de page, puis affichées en
    aperçu et imprimées (@page A5).
    ============================================================= */
-const PR_COLS = [8.5, 16, 10, 26.5, 7, 9.5, 7, 6.5, 6.5, 6.5, 8, 22];   // mm, total 134 = 148 − 2 × 7
+const PR_COLS = [8.5, 16, 10, 26.5, 7, 10.5, 7, 6.5, 6.5, 6.5, 8, 21];   // mm, total 134 = 148 − 2 × 7
 const PR_HEAD = "<colgroup>" + PR_COLS.map(w => '<col style="width:' + w + 'mm">').join("") + "</colgroup>" +
   '<thead><tr><th rowspan="2">Date</th><th rowspan="2">Appareil</th><th rowspan="2">Fct</th><th rowspan="2">Mission, nature, équipage</th>' +
   '<th colspan="2">Jour</th><th colspan="3">Nuit</th><th rowspan="2">VSV</th><th rowspan="2">Total</th><th rowspan="2">Observations</th></tr>' +
@@ -1484,11 +1484,20 @@ function buildPrintPages(ym){
   // hauteur réellement occupée, avec ~2 mm de marge de sécurité pour l'impression
   /* toute case dont le texte dépasse est réduite pas à pas jusqu'à tenir dans sa largeur
      (mesure faite sur l'appareil lui-même, donc avec ses propres polices) */
+  /* Le débordement est mesuré sur le texte lui-même (Range), car Safari ne le
+     signale pas via scrollWidth sur les cases de tableau. */
+  const overflows = c => {
+    const cs = getComputedStyle(c), r = c.getBoundingClientRect();
+    const inner = r.width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - parseFloat(cs.borderLeftWidth) - parseFloat(cs.borderRightWidth);
+    const rg = document.createRange(); rg.selectNodeContents(c);
+    const t = rg.getBoundingClientRect();
+    return t.width > inner + 0.3 || c.scrollWidth > c.clientWidth + 0.5;
+  };
   const fitCells = root => {
     if (!root) return;
     root.querySelectorAll("td, th").forEach(c => {
       let fs = parseFloat(getComputedStyle(c).fontSize), n = 0;
-      while (c.scrollWidth > c.clientWidth + 0.5 && n++ < 14){ fs *= 0.93; c.style.fontSize = fs.toFixed(2) + "px"; }
+      while (overflows(c) && n++ < 16){ fs *= 0.93; c.style.fontSize = fs.toFixed(2) + "px"; }
     });
   };
   const over = () => {
