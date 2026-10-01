@@ -240,7 +240,10 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
 .pv-bar h2{font-size:17px;font-weight:650;text-align:center}
 .pv-scroll{flex:1;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .pv-pages{padding:16px 12px calc(env(safe-area-inset-bottom) + 28px);display:flex;flex-direction:column;align-items:center;gap:16px}
-.pv-pages .a5{box-shadow:0 4px 18px rgba(0,0,0,.45);flex:none}
+/* l'aperçu est réduit par transform : la mise en page reste exactement celle qui a été mesurée et qui sera imprimée */
+.pv-pages{--s:1}
+.pvp{flex:none;width:calc(148mm * var(--s));height:calc(210mm * var(--s));overflow:hidden;background:#fff;box-shadow:0 4px 18px rgba(0,0,0,.45)}
+.pvp > .a5{transform:scale(var(--s));transform-origin:0 0}
 #pvMeasure{position:absolute;left:-10000px;top:0;visibility:hidden}
 .a5{width:148mm;height:210mm;padding:7mm 7mm 5mm;background:#fff;color:#111;display:flex;flex-direction:column;overflow:hidden;
   font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:5.3pt;line-height:1.2;text-align:left;
@@ -281,9 +284,10 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
   #printView{position:static!important;display:block!important;background:#fff!important}
   .pv-bar{display:none!important}
   .pv-scroll{overflow:visible!important}
-  .pv-pages{zoom:1!important;padding:0!important;display:block!important}
-  .pv-pages .a5{box-shadow:none!important;margin:0!important;break-after:page;page-break-after:always}
-  .pv-pages .a5:last-child{break-after:auto;page-break-after:auto}
+  .pv-pages{padding:0!important;display:block!important}
+  .pvp{width:auto!important;height:auto!important;overflow:visible!important;box-shadow:none!important;margin:0!important;break-after:page;page-break-after:always;break-inside:avoid;page-break-inside:avoid}
+  .pvp:last-child{break-after:auto;page-break-after:auto}
+  .pvp > .a5{transform:none!important;margin:0!important}
 }
 
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
@@ -496,7 +500,7 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
    une clé générique).
    Durées stockées en MINUTES entières.
    ============================================================= */
-const APP_VERSION = "1.17";
+const APP_VERSION = "1.18";
 /* tout le texte saisi est enregistré en majuscules */
 const UP = v => String(v == null ? "" : v).toLocaleUpperCase("fr-FR");
 const STORE_KEY = "carnetvol.data.v1";
@@ -1481,7 +1485,7 @@ function buildPrintPages(ym){
     host.appendChild(pg); pages.push(pg);
     content = pg.querySelector(".a5c"); tbody = null; tkind = null;
   };
-  // hauteur réellement occupée, avec ~2 mm de marge de sécurité pour l'impression
+  // hauteur réellement occupée, avec ~4 mm de marge de sécurité pour l'impression
   /* toute case dont le texte dépasse est réduite pas à pas jusqu'à tenir dans sa largeur
      (mesure faite sur l'appareil lui-même, donc avec ses propres polices) */
   /* Le débordement est mesuré sur le texte lui-même (Range), car Safari ne le
@@ -1502,7 +1506,7 @@ function buildPrintPages(ym){
   };
   const over = () => {
     const last = content.lastElementChild;
-    return !!last && last.getBoundingClientRect().bottom - content.getBoundingClientRect().top > content.clientHeight - 8;
+    return !!last && last.getBoundingClientRect().bottom - content.getBoundingClientRect().top > content.clientHeight - 15;
   };
   const openTable = t => {
     content.insertAdjacentHTML("beforeend", '<div class="blk tb"><div class="cap">' + caps[t] + (started[t] ? ", suite" : "") + '</div><table class="fl">' + PR_HEAD + "<tbody></tbody></table></div>");
@@ -1537,13 +1541,13 @@ function buildPrintPages(ym){
 /* l'aperçu est réduit pour tenir dans la largeur de l'écran (148 mm = 559 px CSS) */
 function fitPreview(){
   const vw = document.documentElement.clientWidth || window.innerWidth;
-  $("pvPages").style.zoom = Math.min(1, (vw - 24) / (148 * 96 / 25.4)).toFixed(3);
+  $("pvPages").style.setProperty("--s", Math.min(1, (vw - 24) / (148 * 96 / 25.4)).toFixed(4));
 }
 function openPrintView(ym){
   const pages = buildPrintPages(ym), box = $("pvPages");
   fitPreview();
   box.innerHTML = "";
-  pages.forEach(pg => box.appendChild(pg));
+  pages.forEach(pg => { const w = document.createElement("div"); w.className = "pvp"; w.appendChild(pg); box.appendChild(w); });
   $("pvTitle").textContent = ymLabel(ym);
   UI.printTitle = "Carnet de vol " + ymLabel(ym);
   $("printView").hidden = false;
