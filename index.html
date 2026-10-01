@@ -125,7 +125,7 @@ main{padding:4px 16px calc(var(--tabbar) + env(safe-area-inset-bottom) + 92px);m
 .bars{display:flex;gap:4px;height:130px;margin-top:4px}
 .bar{flex:1;display:flex;flex-direction:column;min-width:0}
 .bar .col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch}
-.bar em{font-style:normal;font-size:11px;color:var(--muted);text-align:center;margin-bottom:3px}
+.bar em{font-style:normal;font-size:10px;letter-spacing:-.02em;white-space:nowrap;color:var(--muted);text-align:center;margin-bottom:3px}
 .bar i{display:block;background:var(--sand2);border-radius:3px 3px 0 0}
 .bar.cur i{background:var(--sand)}
 .bar small{font-size:11px;color:var(--faint);text-align:center;margin-top:5px}
@@ -496,7 +496,7 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
    une clé générique).
    Durées stockées en MINUTES entières.
    ============================================================= */
-const APP_VERSION = "1.15";
+const APP_VERSION = "1.16";
 /* tout le texte saisi est enregistré en majuscules */
 const UP = v => String(v == null ? "" : v).toLocaleUpperCase("fr-FR");
 const STORE_KEY = "carnetvol.data.v1";
@@ -909,9 +909,9 @@ function renderTotaux(){
     '<div class="card"><h2>' + (p === "all" ? "Heures par année" : "Heures par mois") + '</h2><div class="bars num">' +
     buckets.map(b => {
       const v = bm[b.k] || 0;
-      return '<div class="bar' + (b.k === curK ? " cur" : "") + '" title="' + fmtDur(v) + ' h"><div class="col"><em>' + (v ? Math.round(v / 60) : "") +
+      return '<div class="bar' + (b.k === curK ? " cur" : "") + '" title="' + fmtDur(v) + ' h"><div class="col"><em>' + (v ? fmtDur(v) : "") +
         '</em><i style="height:' + (v ? Math.max(2, v / max * 100).toFixed(1) : 0) + '%"></i></div><small>' + b.lab + "</small></div>";
-    }).join("") + '</div><p class="note">Valeurs arrondies à l\'heure.</p></div>' : "";
+    }).join("") + '</div></div>' : "";
 
   /* procédures */
   const names = procNames(list);
