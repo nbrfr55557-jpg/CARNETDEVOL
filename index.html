@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1e241d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Carnet de vol">
+<title>Carnet de vol</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<style>
+:root{
+  --bg:#1e241d; --bg2:#262e25; --bg3:#2f382d;
+  --line:#3d483a; --line2:#4d5a49;
+  --ink:#ece7d6; --muted:#a9ac98; --faint:#7a8070;
+  --sand:#d8c088; --sand2:#9c8a5c; --on-sand:#2a2413;
+  --night:#88a3d0; --sil:#86d97e; --vtn:#6fc3c9; --voltac:#e3a857; --vsv:#b8a3dc; --simu:#6f9ce0; --bad:#e8715f; --warn:#f0b443;
+  --r-lg:16px; --r-md:12px; --r-sm:8px;
+  --tabbar:58px;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;background:var(--bg)}
+body{background:var(--bg);color:var(--ink);font:16px/1.45 var(--font);-webkit-font-smoothing:antialiased;min-height:100vh;overscroll-behavior-y:none}
+body.lock{overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent;background:none;border:0;text-align:inherit}
+.num{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--sand);outline-offset:2px}
+[hidden]{display:none!important}
+
+/* ---------- en-tête et navigation ---------- */
+.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(env(safe-area-inset-top) + 10px) 18px 8px}
+.top h1{font-size:28px;font-weight:700;letter-spacing:-.01em;max-width:720px;margin:0 auto}
+main{padding:4px 16px calc(var(--tabbar) + env(safe-area-inset-bottom) + 92px);max-width:720px;margin:0 auto}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;background:rgba(30,36,29,.95);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.tabbar button{flex:1;height:var(--tabbar);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--faint);font-size:11px;font-weight:500}
+.tabbar svg{width:23px;height:23px}
+.tabbar button[aria-current="page"]{color:var(--sand)}
+.fab{position:fixed;right:16px;bottom:calc(var(--tabbar) + env(safe-area-inset-bottom) + 14px);z-index:7;display:flex;align-items:center;gap:8px;background:var(--sand);color:var(--on-sand);font-weight:700;font-size:16px;padding:14px 20px 14px 16px;border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.fab svg{width:20px;height:20px}
+
+/* ---------- vue Vols ---------- */
+.goal{padding:4px 2px 16px}
+.goal-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.goal .big{font-size:50px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.goal-of{font-size:18px;color:var(--muted);font-weight:600}
+.goal .cap{color:var(--muted);font-size:14px;margin-top:6px}
+.prog.big{height:12px;margin:14px 0 8px}
+.prog.done span{background:var(--sil)}
+.goal-note{font-size:14px;color:var(--muted)}
+.minis{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 2px 16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.minis b{display:block;font-size:18px;color:var(--ink);font-weight:650}
+.nag{display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(216,192,136,.08);border:1px solid rgba(216,192,136,.35);border-radius:var(--r-md);padding:10px 12px;margin-bottom:12px;font-size:14px}
+.nag button{color:var(--sand);font-weight:700;white-space:nowrap;padding:4px 2px}
+.search{width:100%;background:var(--bg3);border:1px solid var(--line);border-radius:var(--r-md);padding:11px 14px;font-size:17px;-webkit-appearance:none;appearance:none}
+.search::placeholder{color:var(--faint)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.filter-chips{flex-wrap:nowrap;overflow-x:auto;padding:12px 0 2px;scrollbar-width:none}
+.filter-chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line2);border-radius:999px;padding:7px 14px;font-size:15px;color:var(--muted);white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--sand);border-color:var(--sand);color:var(--on-sand);font-weight:650}
+.month{margin-top:20px}
+.month-h{display:flex;justify-content:space-between;align-items:baseline;padding:0 2px 8px;color:var(--muted);font-size:14px;font-weight:600}
+.month-h b{color:var(--ink);font-weight:650}
+.month-list{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden}
+.frow{display:grid;grid-template-columns:40px 1fr auto;gap:12px;width:100%;text-align:left;padding:12px 14px;border-top:1px solid var(--line);align-items:start}
+.frow:first-child{border-top:0}
+.frow:active{background:var(--bg3)}
+.fday{text-align:center;line-height:1.15}
+.fday b{display:block;font-size:22px;font-weight:650}
+.fday small{color:var(--faint);font-size:12px}
+.fmain{min-width:0}
+.fl1{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fl1 em{font-style:normal;color:var(--sand);font-weight:500;margin-left:3px}
+.fl2,.fl3{display:block;font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fl3.rem{color:var(--faint);font-style:italic}
+.ftime{text-align:right}
+.ftime b{display:block;font-size:19px;font-weight:650}
+.tags{display:flex;flex-direction:column;align-items:flex-end;margin-top:2px;font-size:12px;line-height:1.35}
+.tags i{font-style:normal}
+.tag-n{color:var(--night)} .tag-sil{color:var(--sil)} .tag-vtn{color:var(--vtn)} .tag-vt{color:var(--voltac)} .tag-v{color:var(--vsv)} .tag-s{color:var(--simu)}
+.fl2.mis{color:var(--ink)}
+.frow.simu{background:rgba(79,128,204,.10)}
+.frow.simu .ftime b{color:var(--muted)}
+.empty{padding:48px 16px;text-align:center;color:var(--muted)}
+.empty strong{display:block;color:var(--ink);font-size:19px;margin-bottom:6px}
+
+/* ---------- vue Totaux ---------- */
+.select{width:100%;-webkit-appearance:none;appearance:none;background:var(--bg3) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a9ac98' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center/18px;border:1px solid var(--line);border-radius:var(--r-md);padding:11px 40px 11px 14px;font-size:17px}
+.hero{padding:24px 2px 4px}
+.hero-num{font-size:68px;font-weight:700;letter-spacing:-.035em;line-height:.95}
+.hero-sub{color:var(--muted);margin-top:8px}
+.split{display:flex;height:10px;border-radius:999px;overflow:hidden;background:var(--bg3);margin:20px 0 12px}
+.split span{display:block;height:100%}
+.legend{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;font-size:13px;color:var(--muted)}
+.legend b{display:block;color:var(--ink);font-size:18px;font-weight:650}
+.legend b small{font-size:14px;font-weight:600;color:var(--muted);margin-left:8px}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.stat b{display:block;font-size:20px;font-weight:650}
+.stat span{font-size:13px;color:var(--muted)}
+.stat i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 16px 16px;margin-top:16px}
+.card h2{font-size:17px;font-weight:650;margin-bottom:10px}
+.objline{font-size:15px;color:var(--muted)} .objline b{color:var(--ink);font-size:20px;font-weight:650;margin-right:4px}
+.prog{height:8px;background:var(--bg3);border-radius:999px;overflow:hidden;margin:10px 0 8px}
+.prog span{display:block;height:100%;background:var(--sand)}
+.kv{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:9px 0;border-top:1px solid var(--line);font-size:15px}
+.card h2 + .kv{border-top:0;padding-top:2px}
+.card h3.sub{font-size:14px;font-weight:650;color:var(--muted);margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.card h3.sub + .kv{border-top:0}
+.kv .k{color:var(--muted)}
+.kv .v{text-align:right}
+.kv .v small{display:block;color:var(--faint);font-size:12px}
+/* récence : ambre au-delà de 2 mois, rouge au-delà de 3 mois */
+.kv.warn .k,.kv.warn .v,.kv.warn .v small{color:var(--warn)}
+.kv.late .k,.kv.late .v,.kv.late .v small{color:var(--bad)}
+.kv.warn .k,.kv.warn .v,.kv.late .k,.kv.late .v{font-weight:650}
+.bars{display:flex;gap:4px;height:130px;margin-top:4px}
+.bar{flex:1;display:flex;flex-direction:column;min-width:0}
+.bar .col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch}
+.bar em{font-style:normal;font-size:11px;color:var(--muted);text-align:center;margin-bottom:3px}
+.bar i{display:block;background:var(--sand2);border-radius:3px 3px 0 0}
+.bar.cur i{background:var(--sand)}
+.bar small{font-size:11px;color:var(--faint);text-align:center;margin-top:5px}
+table.bd{width:100%;border-collapse:collapse;font-size:14px}
+table.bd th{text-align:right;color:var(--faint);font-weight:500;font-size:12px;padding:0 0 6px 8px}
+table.bd td{text-align:right;padding:9px 0 9px 8px;border-top:1px solid var(--line);white-space:nowrap}
+table.bd th:first-child,table.bd td:first-child{text-align:left;padding-left:0;white-space:normal}
+.note{font-size:13px;color:var(--faint);margin-top:8px;line-height:1.45}
+
+/* ---------- vue Réglages ---------- */
+.field{display:block;margin-top:12px}
+.card h2 + .field{margin-top:0}
+.field > span{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+.inp{width:100%;background:var(--bg3);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;font-size:17px;-webkit-appearance:none;appearance:none}
+textarea.inp{min-height:110px;resize:vertical;line-height:1.4}
+.inp:focus{outline:none;border-color:var(--sand)}
+.btn{display:block;width:100%;padding:13px 16px;border-radius:var(--r-md);background:var(--bg3);border:1px solid var(--line2);font-weight:650;font-size:16px;text-align:center;margin-top:10px}
+.btn.primary{background:var(--sand);border-color:var(--sand);color:var(--on-sand)}
+.btn.danger{color:var(--bad);border-color:rgba(232,113,95,.45)}
+.btn.armed{background:var(--bad);border-color:var(--bad);color:#200d09}
+.btnrow{display:flex;gap:10px}
+.btnrow .btn{flex:1}
+.seg{display:flex;background:var(--bg3);border:1px solid var(--line);border-radius:var(--r-sm);padding:3px}
+.seg button{flex:1;padding:8px;border-radius:6px;color:var(--muted);font-weight:500;text-align:center}
+.seg button[aria-pressed="true"]{background:var(--bg2);color:var(--ink);box-shadow:0 0 0 1px var(--line2)}
+.imp{margin-top:12px;padding:12px;border:1px solid var(--line2);border-radius:var(--r-md);background:var(--bg3)}
+.imp p{font-size:15px}
+.foot{text-align:center;color:var(--faint);font-size:12px;margin:28px 0 8px}
+
+/* ---------- fiche de saisie ---------- */
+.sheet{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .2s}
+.sheet.open{opacity:1;pointer-events:auto}
+.sheet-panel{position:absolute;inset:0;background:var(--bg);display:flex;flex-direction:column;transform:translateY(100%);transition:transform .28s cubic-bezier(.2,.8,.2,1),background-color .25s}
+.sheet.open .sheet-panel{transform:none}
+/* séance simulateur : toute la fiche passe en bleu */
+.sheet-panel.simu{--bg:#15233b;--bg2:#1c2d4a;--bg3:#24395c;--line:#32496f;--line2:#45628f;--muted:#a5b5cf;--faint:#7688a6}
+
+/* ---------- choix vol réel / simulateur ---------- */
+.chooser{position:fixed;inset:0;z-index:25;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .2s;display:flex;align-items:flex-end}
+.chooser.open{opacity:1;pointer-events:auto}
+.chooser-panel{width:100%;max-width:640px;margin:0 auto;background:var(--bg2);border:1px solid var(--line);border-bottom:0;border-radius:var(--r-lg) var(--r-lg) 0 0;padding:18px 16px calc(env(safe-area-inset-bottom) + 14px);transform:translateY(100%);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.chooser.open .chooser-panel{transform:none}
+.chooser h2{font-size:17px;font-weight:650;text-align:center;margin-bottom:14px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.choice{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;gap:18px;min-height:132px;padding:16px;border-radius:var(--r-md);text-align:left}
+.choice svg{width:30px;height:30px}
+.choice b{display:block;font-size:20px;font-weight:700}
+.choice small{display:block;font-size:13px;opacity:.8;margin-top:2px}
+.choice.real{background:var(--sand);color:var(--on-sand)}
+.choice.sim{background:#2c5797;color:#eef3fb}
+.sheet-head{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:calc(env(safe-area-inset-top) + 6px) 10px 6px;border-bottom:1px solid var(--line)}
+.sheet-head h2{font-size:17px;font-weight:650;text-align:center}
+.linkbtn{padding:10px 8px;color:var(--sand);font-size:17px;justify-self:start}
+.linkbtn.strong{font-weight:700;justify-self:end}
+.sheet-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px calc(env(safe-area-inset-bottom) + 48px)}
+.sheet-inner{max-width:640px;margin:0 auto}
+.fgroup{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-md);padding:12px 14px 14px;margin-bottom:14px}
+.fgroup.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fld + .fld{margin-top:14px}
+.flab{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);margin-bottom:6px}
+.flab i{display:inline-block;width:8px;height:8px;border-radius:2px}
+input[type="date"].inp{min-height:46px;display:block}
+input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
+.tirs{display:grid;grid-template-columns:auto 1fr 1fr;gap:8px 10px;align-items:center}
+.tirs .th{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;color:var(--muted)}
+.tirs .th i{display:inline-block;width:8px;height:8px;border-radius:2px}
+.tirs .tl{font-size:16px;font-weight:600;padding-right:4px}
+.tirin{font-size:20px;font-weight:650;text-align:center;font-variant-numeric:tabular-nums;padding:8px}
+.tirin::placeholder{color:var(--line2)}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:16px}
+.switch input{-webkit-appearance:none;appearance:none;width:50px;height:30px;border-radius:999px;background:var(--line2);position:relative;transition:background .2s;flex:none}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--ink);transition:transform .2s}
+.switch input:checked{background:var(--sand)}
+.switch input:checked::after{transform:translateX(20px)}
+.fl3.ctrl{color:var(--sand)}
+.seedgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.seedgrid .inp{min-width:0;width:100%}
+.seedgrid .field{margin-top:0}
+.durs{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:14px 10px;align-items:end}
+.durs .flab{gap:5px;font-size:12.5px;white-space:nowrap}
+.durin{font-size:20px;font-weight:650;font-variant-numeric:tabular-nums;padding:8px 10px}
+.durs .lead .durin{font-size:26px}
+.durtot{grid-column:span 2}
+.durtot output small{font-size:14px;font-weight:500;color:var(--muted);margin-left:8px}
+.durtot output{display:block;padding:8px 12px;border-radius:var(--r-sm);border:1px dashed var(--line2);font-size:26px;font-weight:700;color:var(--sand)}
+.procs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.durin::placeholder{color:var(--line2)}
+.inp.bad{border-color:var(--bad)}
+.hint{font-size:14px;color:var(--muted);margin-top:12px}
+.hint.warn{color:#f5b9ae}
+.stepper .ctl{display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border:1px solid var(--line);border-radius:var(--r-sm)}
+.stepper button{width:46px;height:46px;font-size:24px;color:var(--sand);text-align:center}
+.stepper output{font-size:20px;font-weight:650;font-variant-numeric:tabular-nums}
+.ferr{background:rgba(232,113,95,.12);border:1px solid rgba(232,113,95,.5);color:#f5b9ae;border-radius:var(--r-md);padding:10px 14px;margin-bottom:14px;font-size:15px}
+
+/* ---------- toast et bannière de mise à jour ---------- */
+.toast{position:fixed;left:50%;bottom:calc(var(--tabbar) + env(safe-area-inset-bottom) + 84px);transform:translate(-50%,16px);opacity:0;pointer-events:none;background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:999px;font-weight:650;font-size:15px;display:flex;gap:16px;align-items:center;transition:opacity .2s,transform .2s;z-index:30;max-width:calc(100% - 32px);white-space:nowrap}
+.toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast button{color:#6b5a26;font-weight:800}
+.upd{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top) + 8px);z-index:40;background:var(--sand);color:var(--on-sand);border-radius:var(--r-md);padding:10px 10px 10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.45);transform:translateY(-160%);transition:transform .3s}
+.upd.show{transform:none}
+.upd p{flex:1;font-size:15px;font-weight:650}
+.upd .go{font-weight:800;padding:8px 12px;border-radius:8px;background:rgba(0,0,0,.12)}
+.upd .x{font-size:22px;line-height:1;padding:6px 8px}
+
+/* ---------- aperçu et impression A5 ---------- */
+.pv{position:fixed;inset:0;z-index:35;background:#3a4038;display:flex;flex-direction:column}
+.pv-bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:calc(env(safe-area-inset-top) + 6px) 10px 6px;background:var(--bg);border-bottom:1px solid var(--line)}
+.pv-bar h2{font-size:17px;font-weight:650;text-align:center}
+.pv-scroll{flex:1;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.pv-pages{padding:16px 12px calc(env(safe-area-inset-bottom) + 28px);display:flex;flex-direction:column;align-items:center;gap:16px}
+.pv-pages .a5{box-shadow:0 4px 18px rgba(0,0,0,.45);flex:none}
+#pvMeasure{position:absolute;left:-10000px;top:0;visibility:hidden}
+.a5{width:148mm;height:210mm;padding:7mm 7mm 5mm;background:#fff;color:#111;display:flex;flex-direction:column;overflow:hidden;
+  font-family:-apple-system,"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:6.7pt;line-height:1.22;text-align:left;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact}
+.a5 *{box-sizing:border-box}
+.a5-head{flex:none;display:flex;justify-content:space-between;align-items:flex-end;gap:4mm;border-bottom:.8pt solid #111;padding-bottom:2mm;margin-bottom:3mm}
+.a5-head .k{font-size:6.5pt;color:#555;margin-bottom:.8mm}
+.a5-head h1{font-size:16pt;font-weight:700;letter-spacing:-.01em;line-height:1}
+.a5-head .r{text-align:right;color:#333}
+.a5-head.sm{align-items:baseline;font-size:8pt;padding-bottom:1.2mm;margin-bottom:2.5mm}
+.a5c{flex:1 1 auto;min-height:0;overflow:hidden}
+.a5-foot{flex:none;display:flex;justify-content:space-between;font-size:5.8pt;color:#777;border-top:.4pt solid #bbb;padding-top:1mm;margin-top:1.5mm}
+.a5 .blk + .blk{margin-top:3.5mm}
+.a5 .cap{font-size:8pt;font-weight:700;margin-bottom:1.2mm}
+.a5 table{width:100%;border-collapse:collapse;table-layout:fixed}
+.a5 th{font-size:5.6pt;font-weight:600;color:#222;background:#e6e6e6;border:.4pt solid #8a8a8a;padding:.8mm .6mm;text-align:center;line-height:1.1;vertical-align:middle}
+.a5 td{border:.4pt solid #a8a8a8;padding:.8mm .7mm;vertical-align:top;overflow-wrap:anywhere}
+.a5 td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.a5 td.b{font-weight:700}
+.a5 tr.sim td{background:#eaf0f8}
+.a5 tr.tot td{font-weight:700;background:#f0f0f0;border-top:.9pt solid #111}
+.a5 .recap{display:grid;grid-template-columns:1fr 1fr;gap:3mm;align-items:start}
+.a5 table.rc + table.rc{margin-top:2.5mm}
+.a5 table.rc th:first-child,.a5 table.rc td:first-child{text-align:left}
+.a5 table.rc th:not(:first-child){width:16mm}
+.a5 small{font-size:5.4pt;color:#555}
+.a5 .mute{color:#777}
+.a5 .notes p{margin:.7mm 0}
+.a5 .cert{font-size:7.5pt;font-weight:700;font-style:italic;text-align:center;margin-bottom:2mm}
+.a5 .sig{display:grid;grid-template-columns:1fr 1fr;gap:4mm}
+.a5 .sig div{height:24mm;border:.6pt solid #555;border-radius:1mm;padding:1.2mm 1.6mm;font-size:6.5pt;color:#333}
+@page{size:A5 portrait;margin:0}
+@media print{
+  html,body{background:#fff!important;min-height:0!important;overflow:visible!important;height:auto!important}
+  body > *:not(#printView){display:none!important}
+  #printView{position:static!important;display:block!important;background:#fff!important}
+  .pv-bar{display:none!important}
+  .pv-scroll{overflow:visible!important}
+  .pv-pages{zoom:1!important;padding:0!important;display:block!important}
+  .pv-pages .a5{box-shadow:none!important;margin:0!important;break-after:page;page-break-after:always}
+  .pv-pages .a5:last-child{break-after:auto;page-break-after:auto}
+}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="upd" id="upd" aria-live="polite">
+  <p>Nouvelle version disponible</p>
+  <button class="go" id="updGo" type="button">Mettre à jour</button>
+  <button class="x" id="updX" type="button" aria-label="Ignorer">×</button>
+</div>
+
+<header class="top"><h1 id="viewTitle">Carnet de vol</h1></header>
+
+<main>
+  <!-- ===== VOLS ===== -->
+  <section id="v-vols">
+    <div id="volsHead"></div>
+    <div class="nag" id="backupNag" hidden><span id="nagText"></span><button type="button" id="nagBtn">Exporter</button></div>
+    <div id="searchWrap"><input id="q" class="search" type="search" placeholder="Rechercher un vol" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Rechercher un vol"></div>
+    <div class="chips filter-chips" id="typeChips"></div>
+    <div id="volsList"></div>
+  </section>
+
+  <!-- ===== TOTAUX ===== -->
+  <section id="v-totaux" hidden>
+    <select class="select" id="periodSel" aria-label="Période"></select>
+    <div class="hero" id="totHero"></div>
+    <div id="totObj"></div>
+    <div id="totBars"></div>
+    <div id="totProcs"></div>
+    <div id="totTirs"></div>
+    <div id="totTables"></div>
+    <div id="totRecence"></div>
+  </section>
+
+  <!-- ===== RÉGLAGES ===== -->
+  <section id="v-reglages" hidden>
+    <div class="card" style="margin-top:4px">
+      <h2>Impression mensuelle A5</h2>
+      <label class="field"><span>Mois à imprimer</span><select class="select" id="prMonth"></select></label>
+      <label class="field"><span>Nom en tête de page (facultatif)</span><input class="inp" id="prName" autocomplete="off" autocorrect="off" spellcheck="false"></label>
+      <button class="btn primary" id="prGo" type="button">Aperçu avant impression</button>
+      <p class="note">Vols et séances simulateur du mois, récapitulatif du mois et cumul de l'année. Format A5 (148 × 210 mm) : sur une imprimante chargée en A4, chaque page s'imprime en haut de la feuille, il suffit de découper.</p>
+    </div>
+
+    <div class="card">
+      <h2>Sauvegarde</h2>
+      <p class="note" id="bkInfo" style="margin-top:0"></p>
+      <button class="btn primary" id="exportJson" type="button">Exporter la sauvegarde</button>
+      <div class="btnrow">
+        <button class="btn" id="importBtn" type="button">Importer</button>
+        <button class="btn" id="exportCsv" type="button">Export CSV</button>
+      </div>
+      <input type="file" id="importFile" accept=".json,application/json" hidden>
+      <div class="imp" id="importPanel" hidden></div>
+      <p class="note">Les vols sont enregistrés uniquement sur ce téléphone, jamais sur GitHub. Supprimer l'app de l'écran d'accueil les efface : exportez régulièrement la sauvegarde vers Fichiers ou iCloud Drive.</p>
+    </div>
+
+    <div class="card">
+      <h2>Listes de saisie</h2>
+      <label class="field"><span>Appareils, un par ligne</span><textarea class="inp" id="sTypes" rows="3"></textarea></label>
+      <label class="field"><span>Fonctions à bord</span><textarea class="inp" id="sFonctions" rows="6"></textarea></label>
+      <label class="field"><span>Natures de vol</span><textarea class="inp" id="sNatures" rows="7"></textarea></label>
+      <label class="field"><span>Procédures</span><textarea class="inp" id="sProcs" rows="5"></textarea></label>
+      <p class="note">Enregistrement automatique pendant la saisie. Modifier une liste ne renomme pas les vols déjà saisis.</p>
+    </div>
+
+    <div class="card">
+      <h2>Objectif</h2>
+      <label class="field"><span>Objectif d'heures de vol réel sur 12 mois glissants (vide pour masquer la barre)</span><input class="inp" id="sObj" inputmode="decimal" autocomplete="off"></label>
+    </div>
+
+    <div class="card">
+      <h2>Récence antérieure au carnet</h2>
+      <p class="note" style="margin:0 0 12px">Dates des derniers tests et séances PU effectués avant de tenir ce carnet. Une saisie plus récente dans le carnet prend automatiquement le relais.</p>
+      <div class="seedgrid" id="seedGrid"></div>
+    </div>
+
+    <div class="card">
+      <h2>Données</h2>
+      <p class="note" id="dataInfo" style="margin-top:0"></p>
+      <button class="btn danger" id="wipeBtn" type="button">Effacer tous les vols</button>
+    </div>
+    <p class="foot" id="foot"></p>
+  </section>
+</main>
+
+<button class="fab" id="addBtn" type="button">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  Nouveau vol
+</button>
+
+<nav class="tabbar" aria-label="Navigation">
+  <button type="button" data-view="vols" aria-current="page">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Vols</button>
+  <button type="button" data-view="totaux">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 20v-8M12 20V4M19 20v-5"/></svg>Totaux</button>
+  <button type="button" data-view="reglages">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h9M19 7h1M4 17h3M13 17h7"/><circle cx="16" cy="7" r="2.5"/><circle cx="10" cy="17" r="2.5"/></svg>Réglages</button>
+</nav>
+
+<!-- ===== FICHE DE SAISIE ===== -->
+<div class="sheet" id="sheet" aria-hidden="true">
+  <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet-head">
+      <button class="linkbtn" id="fCancel" type="button">Annuler</button>
+      <h2 id="sheetTitle">Nouveau vol</h2>
+      <button class="linkbtn strong" id="fSave" type="button">Enregistrer</button>
+    </div>
+    <div class="sheet-body" id="sheetBody">
+      <div class="sheet-inner">
+        <div class="ferr" id="fErr" hidden></div>
+
+        <div class="fgroup">
+          <div class="fld"><span class="flab">Date</span><input class="inp" type="date" id="fDate"></div>
+        </div>
+
+        <div class="fgroup">
+          <div class="fld"><span class="flab">Appareil</span><div class="chips" id="fTypeChips"></div></div>
+          <div class="fld"><span class="flab">Numéro de l'appareil</span><input class="inp" id="fImmat" list="dlImmat" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"></div>
+        </div>
+
+        <div class="fgroup">
+          <div class="fld"><span class="flab">Fonction à bord</span><div class="chips" id="fFonctionChips"></div></div>
+          <div class="fld" id="fNatureFld"><span class="flab">Nature du vol</span><div class="chips" id="fNatureChips"></div></div>
+        </div>
+
+        <div class="fgroup">
+          <div class="fld"><span class="flab">Mission</span><input class="inp" id="fMission" list="dlMission" autocomplete="off" autocorrect="off" spellcheck="false"></div>
+          <div class="fld"><span class="flab">Autre membre d'équipage</span><input class="inp" id="fEquip" list="dlEquip" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false"></div>
+        </div>
+
+        <div class="fgroup">
+          <div class="durs">
+            <label class="lead"><span class="flab"><i style="background:var(--sand)"></i>Jour</span><input class="inp durin" id="fJour" inputmode="decimal" autocomplete="off" placeholder="0,0"></label>
+            <label><span class="flab"><i style="background:var(--voltac)"></i>dont VOLTAC</span><input class="inp durin" id="fVoltac" inputmode="decimal" autocomplete="off" placeholder="0,0"></label>
+            <span aria-hidden="true"></span>
+            <label class="lead"><span class="flab"><i style="background:var(--night)"></i>Nuit</span><input class="inp durin" id="fNuit" inputmode="decimal" autocomplete="off" placeholder="0,0"></label>
+            <label><span class="flab"><i style="background:var(--sil)"></i>dont SIL</span><input class="inp durin" id="fSil" inputmode="decimal" autocomplete="off" placeholder="0,0"></label>
+            <label><span class="flab"><i style="background:var(--vtn)"></i>dont VTN</span><input class="inp durin" id="fVtn" inputmode="decimal" autocomplete="off" placeholder="0,0"></label>
+            <label><span class="flab"><i style="background:var(--vsv)"></i>dont VSV</span><input class="inp durin" id="fVsv" inputmode="decimal" autocomplete="off" placeholder="0,0"></label>
+            <div class="durtot"><span class="flab">Total du vol</span><output id="fTotOut" class="num">0,0</output></div>
+          </div>
+          <p class="hint" id="fHint"></p>
+        </div>
+
+        <div class="fgroup">
+          <div class="fld"><span class="flab">Test ou évaluation</span><div class="chips" id="fTests"></div></div>
+          <label class="fld switch"><span>Procédures d'urgence (PU)</span><input type="checkbox" id="fPu"></label>
+        </div>
+
+        <div class="fgroup" id="fProcGroup">
+          <span class="flab">Procédures</span>
+          <div class="procs" id="fProcs"></div>
+        </div>
+
+        <div class="fgroup" id="fTirsGroup">
+          <span class="flab">Munitions tirées</span>
+          <div class="tirs" id="fTirs"></div>
+        </div>
+
+        <div class="fgroup">
+          <label class="fld"><span class="flab">Remarques</span><textarea class="inp" id="fRem" rows="3"></textarea></label>
+        </div>
+
+        <button class="btn danger" id="fDelete" type="button" hidden>Supprimer ce vol</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="chooser" id="chooser" aria-hidden="true">
+  <div class="chooser-panel" role="dialog" aria-modal="true" aria-labelledby="chooserTitle">
+    <h2 id="chooserTitle">Nouvelle saisie</h2>
+    <div class="choices">
+      <button type="button" class="choice real" data-simu="0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3.7 8.6L20.3 15.4M15.4 3.7L8.6 20.3"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>
+        <span><b>Vol réel</b><small>Compte dans l'objectif</small></span></button>
+      <button type="button" class="choice sim" data-simu="1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+        <span><b>Simulateur</b><small>Compté à part</small></span></button>
+    </div>
+    <button type="button" class="btn" id="chooserCancel">Annuler</button>
+  </div>
+</div>
+
+<div class="pv" id="printView" hidden>
+  <div class="pv-bar">
+    <button class="linkbtn" id="pvClose" type="button">Fermer</button>
+    <h2 id="pvTitle"></h2>
+    <button class="linkbtn strong" id="pvPrint" type="button">Imprimer</button>
+  </div>
+  <div class="pv-scroll"><div class="pv-pages" id="pvPages"></div></div>
+</div>
+<div id="pvMeasure" aria-hidden="true"></div>
+
+<datalist id="dlImmat"></datalist>
+<datalist id="dlMission"></datalist>
+<datalist id="dlEquip"></datalist>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+"use strict";
+/* =============================================================
+   CARNET DE VOL — PWA autonome
+   Données : localStorage, clé unique STORE_KEY (le domaine
+   github.io est partagé avec les autres PWA : ne jamais réutiliser
+   une clé générique).
+   Durées stockées en MINUTES entières.
+   ============================================================= */
+const APP_VERSION = "1.12";
+const STORE_KEY = "carnetvol.data.v1";
+const DEFAULTS = {
+  types: ["Tigre HAD", "Cougar NG AS532", "H120"],
+  fonctions: ["CDB", "Pilote", "Copilote", "Instructeur", "Élève", "Méca navigant"],
+  natures: ["Entraînement", "Instruction", "Opération", "Exercice", "Contrôle", "Transport", "Essai / réception"],
+  procedures: ["ILS", "VOR", "POA", "GCA", "SCA"],
+  objectif12: 140,   // heures de vol réel visées sur 12 mois glissants
+};
+const LIST_KEYS = ["types", "fonctions", "natures", "procedures"];
+/* Munitions comptées par vol réel, de jour (J) et de nuit (N) */
+const ARMES = [["canon", "Canon"], ["hellfire", "Hellfire"], ["roquette", "Roquette"]];
+const TIR_KEYS = ARMES.flatMap(([k]) => [k + "J", k + "N"]);
+/* Tests annuels, cochables en vol comme au simulateur */
+const TESTS = [["jour", "Test jour"], ["vi", "Test VI"], ["sil", "Éval SIL"]];
+const TEST_KEYS = TESTS.map(t => t[0]);
+/* Dates antérieures au carnet (Réglages), clé → libellé */
+const SEEDS = TESTS.map(([k, l]) => ["test_" + k, l]).concat([["pu_vol", "PU en vol"], ["pu_sim", "PU simulateur"]]);
+const ISO_RE = /^\d{4}-\d{2}-\d{2}$/;
+/* Saisie : jour dont VOLTAC, nuit dont SIL et VTN, VSV de jour comme de nuit.
+   Le total du vol est toujours calculé : jour + nuit. */
+const DUR_KEYS = ["jour", "voltac", "nuit", "sil", "vtn", "vsv"];
+
+/* ---------- utilitaires ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const z2 = n => String(n).padStart(2, "0");
+const isoDate = d => d.getFullYear() + "-" + z2(d.getMonth() + 1) + "-" + z2(d.getDate());
+const todayISO = () => isoDate(new Date());
+const daysAgoISO = n => isoDate(new Date(Date.now() - n * 864e5));
+/* même jour n mois plus tôt (31 mai − 3 mois → 28 ou 29 février) */
+function monthsAgoISO(n){
+  const t = new Date(), y = t.getFullYear(), m = t.getMonth() - n;
+  return isoDate(new Date(y, m, Math.min(t.getDate(), new Date(y, m + 1, 0).getDate())));
+}
+const frDate = iso => iso ? iso.split("-").reverse().join("/") : "";
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const plural = (n, s, p) => n + " " + (n > 1 ? (p || s + "s") : s);
+const sumMin = (list, k) => list.reduce((s, f) => s + (f[k] || 0), 0);
+function daysSince(iso){
+  const a = new Date(iso + "T12:00:00"), b = new Date(todayISO() + "T12:00:00");
+  return Math.round((b - a) / 864e5);
+}
+function sinceLabel(n){
+  if (n < 0) return "date future";
+  if (n === 0) return "aujourd'hui";
+  if (n === 1) return "hier";
+  return "il y a " + n + " j";
+}
+/* Durées stockées en minutes, saisies et affichées en heures décimales (1,8 = 1 h 48) */
+function fmtHM(min){
+  min = Math.max(0, Math.round(min || 0));
+  return Math.floor(min / 60) + "\u00a0h\u00a0" + z2(min % 60);
+}
+function fmtDec(min){
+  return ((min || 0) / 60).toLocaleString("fr-FR", {minimumFractionDigits: 1, maximumFractionDigits: 1});
+}
+const fmtDur = fmtDec;
+
+/* ---------- stockage ---------- */
+function normSettings(s){
+  const o = {objectif12: DEFAULTS.objectif12, seed: {}};
+  LIST_KEYS.forEach(k => { o[k] = DEFAULTS[k].slice(); });
+  SEEDS.forEach(([k]) => { const v = s && s.seed && s.seed[k]; o.seed[k] = ISO_RE.test(v || "") ? v : ""; });
+  o.printName = s && typeof s.printName === "string" ? s.printName.trim().slice(0, 80) : "";
+  if (s && typeof s === "object"){
+    LIST_KEYS.forEach(k => {
+      if (Array.isArray(s[k])){
+        const v = [...new Set(s[k].map(x => String(x).trim()).filter(Boolean))];
+        if (v.length || k === "procedures") o[k] = v;
+      }
+    });
+    if (s.objectif12 != null && s.objectif12 !== "" && isFinite(+s.objectif12) && +s.objectif12 >= 0) o.objectif12 = +s.objectif12;
+  }
+  return o;
+}
+function normFlight(o){
+  if (!o || typeof o !== "object" || !/^\d{4}-\d{2}-\d{2}$/.test(o.date)) return null;
+  const n = v => Math.max(0, Math.round(Number(v) || 0));
+  const s = v => (v == null ? "" : String(v)).trim().slice(0, 500);
+  const now = new Date().toISOString();
+  // reprise des vols saisis avec la v1 (total + nuit + JVN)
+  const legacy = o.jour == null && o.total != null;
+  const nuit = n(o.nuit);
+  const proc = {};
+  if (o.proc && typeof o.proc === "object") Object.keys(o.proc).forEach(k => { const v = n(o.proc[k]); if (v && s(k)) proc[s(k)] = Math.min(v, 99); });
+  const f = {
+    id: s(o.id) || uid(), date: o.date, simu: !!o.simu,
+    type: s(o.type), immat: s(o.immat), fonction: s(o.fonction), nature: s(o.nature),
+    mission: s(o.mission), equipier: s(o.equipier),
+    jour: legacy ? Math.max(0, n(o.total) - nuit) : n(o.jour), voltac: n(o.voltac),
+    nuit, sil: n(legacy ? o.jvn : o.sil), vtn: n(o.vtn), vsv: n(o.vsv),
+    proc, tirs: {}, rem: s(o.rem),
+    tests: Array.isArray(o.tests) ? [...new Set(o.tests.filter(t => TEST_KEYS.includes(t)))] : [], pu: !!o.pu,
+    createdAt: s(o.createdAt) || now, updatedAt: s(o.updatedAt) || s(o.createdAt) || now
+  };
+  if (!f.simu && o.tirs && typeof o.tirs === "object") TIR_KEYS.forEach(k => { const v = Math.min(n(o.tirs[k]), 9999); if (v) f.tirs[k] = v; });
+  f.voltac = Math.min(f.voltac, f.jour);
+  f.sil = Math.min(f.sil, f.nuit); f.vtn = Math.min(f.vtn, f.nuit);
+  f.total = f.jour + f.nuit;
+  f.vsv = Math.min(f.vsv, f.total);
+  return f;
+}
+const procSum = f => Object.values(f.proc || {}).reduce((s, v) => s + v, 0);
+const procNames = list => [...new Set(DB.settings.procedures.concat(...list.map(f => Object.keys(f.proc || {}))))];
+const tirOf = (f, arme) => ((f.tirs || {})[arme + "J"] || 0) + ((f.tirs || {})[arme + "N"] || 0);
+function tirText(f){
+  return ARMES.map(([k, l]) => { const t = tirOf(f, k); return t ? l + " " + t : ""; }).filter(Boolean).join(", ");
+}
+function ctrlText(f){
+  return TESTS.filter(([k]) => (f.tests || []).includes(k)).map(t => t[1]).concat(f.pu ? ["PU"] : []).join(", ");
+}
+/* même jour n mois plus tard (ou plus tôt si n < 0), jour borné à la fin du mois */
+function addMonthsISO(iso, n){
+  const [y, m, d] = iso.split("-").map(Number);
+  const t = new Date(y, m - 1 + n, 1);
+  return isoDate(new Date(t.getFullYear(), t.getMonth(), Math.min(d, new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate())));
+}
+/* échéance : ambre dans le mois qui précède, rouge le lendemain de l'échéance */
+function dueState(due){ const t = todayISO(); return t > due ? "late" : t > addMonthsISO(due, -1) ? "warn" : ""; }
+const kvHTML = (k, v, small, st) => '<div class="kv' + (st ? " " + st : "") + '"><span class="k">' + k + '</span><span class="v num">' + v + (small ? "<small>" + small + "</small>" : "") + "</span></div>";
+function procText(f){
+  return Object.keys(f.proc || {}).filter(k => f.proc[k]).map(k => k + (f.proc[k] > 1 ? " ×" + f.proc[k] : "")).join(", ");
+}
+function loadDB(){
+  let d = null;
+  try { d = JSON.parse(localStorage.getItem(STORE_KEY) || "null"); } catch (e) {}
+  if (!d || typeof d !== "object") d = {};
+  return {
+    flights: Array.isArray(d.flights) ? d.flights.map(normFlight).filter(Boolean) : [],
+    settings: normSettings(d.settings),
+    lastBackup: typeof d.lastBackup === "string" ? d.lastBackup : null
+  };
+}
+function persist(){
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(DB)); return true; }
+  catch (e){ toast("Enregistrement impossible : stockage plein ou indisponible"); return false; }
+}
+let persistAsked = false;
+function askPersist(){
+  if (persistAsked) return; persistAsked = true;
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+}
+function sortFlights(){
+  DB.flights.sort((a, b) => b.date.localeCompare(a.date) || (b.createdAt || "").localeCompare(a.createdAt || ""));
+}
+
+let DB = loadDB();
+sortFlights();
+const UI = {view: "vols", q: "", typeFilter: "", limit: 200, period: "y:" + new Date().getFullYear(), editingId: null, pending: null};
+
+/* ---------- petits composants ---------- */
+let toastT = null;
+function toast(msg, actLabel, actFn){
+  const el = $("toast");
+  el.innerHTML = "<span>" + esc(msg) + "</span>" + (actLabel ? '<button type="button">' + esc(actLabel) + "</button>" : "");
+  if (actLabel) el.querySelector("button").onclick = () => { el.classList.remove("show"); actFn(); };
+  el.classList.add("show");
+  clearTimeout(toastT);
+  toastT = setTimeout(() => el.classList.remove("show"), actLabel ? 6000 : 2400);
+}
+/* Action destructive : premier appui = armement 3 s, second appui = exécution (pas de confirm()) */
+function armButton(btn, label, armedLabel, action){
+  let t = null;
+  btn.classList.remove("armed"); btn.textContent = label;
+  btn.onclick = () => {
+    if (btn.classList.contains("armed")){
+      clearTimeout(t); btn.classList.remove("armed"); btn.textContent = label; action();
+    } else {
+      btn.classList.add("armed"); btn.textContent = armedLabel;
+      t = setTimeout(() => { btn.classList.remove("armed"); btn.textContent = label; }, 3000);
+    }
+  };
+}
+async function shareOrDownload(blob, name){
+  try {
+    const file = new File([blob], name, {type: blob.type});
+    if (navigator.canShare && navigator.canShare({files: [file]})){
+      await navigator.share({files: [file], title: name});
+      return true;
+    }
+  } catch (e){
+    if (e && e.name === "AbortError") return false;
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+  return true;
+}
+
+/* ---------- navigation ---------- */
+const VIEWS = {vols: "Carnet de vol", totaux: "Totaux", reglages: "Réglages"};
+function setView(v){
+  UI.view = v;
+  Object.keys(VIEWS).forEach(k => { $("v-" + k).hidden = k !== v; });
+  document.querySelectorAll(".tabbar button").forEach(b => b.setAttribute("aria-current", b.dataset.view === v ? "page" : "false"));
+  $("viewTitle").textContent = VIEWS[v];
+  window.scrollTo(0, 0);
+  renderView();
+}
+function renderView(){
+  if (UI.view === "vols") renderVols();
+  else if (UI.view === "totaux") renderTotaux();
+  else renderSettings();
+}
+
+/* =============================================================
+   VUE VOLS
+   ============================================================= */
+/* Objectif sur 12 mois glissants : vols réels uniquement, datés de J-364 à J */
+function goalInfo(){
+  const today = todayISO(), cut12 = daysAgoISO(365), cutOut = daysAgoISO(335);
+  const w = DB.flights.filter(f => !f.simu && f.date > cut12 && f.date <= today);
+  const h12 = sumMin(w, "total");
+  const leaving = sumMin(w.filter(f => f.date <= cutOut), "total");
+  const obj = +DB.settings.objectif12 || 0, objMin = Math.round(obj * 60);
+  const done = objMin > 0 && h12 >= objMin;
+  let msg = "";
+  if (objMin){
+    msg = done ? "Objectif atteint, avec " + fmtDur(h12 - objMin) + " h d'avance." : "Reste " + fmtDur(objMin - h12) + " h à voler.";
+    if (leaving) msg += " D'ici 30 jours, " + fmtDur(leaving) + " h sortiront du compteur.";
+  }
+  return {h12, obj, objMin, done, pct: objMin ? Math.min(100, h12 / objMin * 100) : 0, msg,
+          objLabel: String(obj).replace(".", ",") + " h"};
+}
+function goalBar(g){
+  return '<div class="prog big' + (g.done ? " done" : "") + '" role="progressbar" aria-label="Objectif 12 mois" aria-valuemin="0" aria-valuemax="' + g.obj +
+    '" aria-valuenow="' + (g.h12 / 60).toFixed(1) + '"><span style="width:' + g.pct.toFixed(2) + '%"></span></div>';
+}
+function renderVols(){
+  const y = String(new Date().getFullYear());
+  const real = DB.flights.filter(f => !f.simu);
+  const yl = real.filter(f => f.date.startsWith(y));
+  const g = goalInfo();
+  $("volsHead").innerHTML =
+    '<div class="goal"><div class="goal-top"><span class="big num">' + fmtDur(g.h12) + "</span>" +
+      (g.objMin ? '<span class="goal-of num">sur ' + g.objLabel + "</span>" : "") + "</div>" +
+      '<div class="cap">heures de vol réel sur les 12 derniers mois</div>' +
+      (g.objMin ? goalBar(g) + '<p class="goal-note num">' + g.msg + "</p>" : "") + "</div>" +
+    (DB.flights.length ? '<div class="minis num"><div><b>' + fmtDur(sumMin(yl, "total")) + "</b>en " + y + ", " + plural(yl.length, "vol") + "</div>" +
+      "<div><b>" + fmtDur(sumMin(real, "total")) + "</b>total carnet, " + plural(real.length, "vol") + "</div></div>" : "");
+
+  const lb = DB.lastBackup ? Math.floor((Date.now() - Date.parse(DB.lastBackup)) / 864e5) : null;
+  const stale = DB.flights.length >= 3 && (lb === null || lb > 30);
+  $("backupNag").hidden = !stale;
+  if (stale) $("nagText").textContent = lb === null ? "Aucune sauvegarde du carnet pour l'instant." : "Dernière sauvegarde il y a " + lb + " jours.";
+
+  const types = [...new Set(DB.flights.map(f => f.type).filter(Boolean))];
+  if (UI.typeFilter && !types.includes(UI.typeFilter)) UI.typeFilter = "";
+  $("typeChips").hidden = types.length < 2;
+  $("typeChips").innerHTML = [["", "Tous"]].concat(types.map(t => [t, t])).map(([v, l]) =>
+    '<button type="button" class="chip" data-type="' + esc(v) + '" aria-pressed="' + (UI.typeFilter === v) + '">' + esc(l) + "</button>").join("");
+  $("searchWrap").hidden = !DB.flights.length;
+  renderList();
+}
+function renderList(){
+  const host = $("volsList");
+  if (!DB.flights.length){
+    host.innerHTML = '<div class="empty"><strong>Carnet vide</strong>Saisissez votre premier vol avec le bouton Nouveau vol.</div>';
+    return;
+  }
+  const q = UI.q.trim().toLowerCase();
+  let list = DB.flights;
+  if (UI.typeFilter) list = list.filter(f => f.type === UI.typeFilter);
+  if (q) list = list.filter(f => [f.type, f.immat, f.fonction, f.nature, f.mission, f.equipier, procText(f), ctrlText(f), f.rem, frDate(f.date)].join(" ").toLowerCase().includes(q));
+  if (!list.length){
+    host.innerHTML = '<div class="empty"><strong>Aucun vol trouvé</strong>Modifiez la recherche ou le filtre.</div>';
+    return;
+  }
+  const monthTot = {};
+  list.forEach(f => { if (!f.simu){ const k = f.date.slice(0, 7); monthTot[k] = (monthTot[k] || 0) + f.total; } });
+  const shown = list.slice(0, UI.limit);
+  const groups = [];
+  shown.forEach(f => {
+    const k = f.date.slice(0, 7);
+    if (!groups.length || groups[groups.length - 1].k !== k) groups.push({k, items: []});
+    groups[groups.length - 1].items.push(f);
+  });
+  let h = "";
+  groups.forEach(g => {
+    const [yy, mm] = g.k.split("-").map(Number);
+    const lab = cap(new Date(yy, mm - 1, 1).toLocaleDateString("fr-FR", {month: "long", year: "numeric"}));
+    h += '<section class="month"><div class="month-h"><span>' + lab + '</span><b class="num">' + fmtDur(monthTot[g.k] || 0) + "</b></div>" +
+         '<div class="month-list">' + g.items.map(rowHTML).join("") + "</div></section>";
+  });
+  if (list.length > shown.length) h += '<button type="button" class="btn" id="moreBtn">Afficher les vols plus anciens (' + (list.length - shown.length) + ")</button>";
+  host.innerHTML = h;
+}
+function rowHTML(f){
+  const d = new Date(f.date + "T12:00:00");
+  const wd = d.toLocaleDateString("fr-FR", {weekday: "short"});
+  let l3 = [f.fonction, f.nature].filter(Boolean).join(", ");
+  if (f.equipier) l3 += (l3 ? ", avec " : "Avec ") + f.equipier;
+  const pt = procText(f), tt = tirText(f);
+  const tags = [];
+  if (f.simu) tags.push('<i class="tag-s">Simulateur</i>');
+  if (f.voltac) tags.push('<i class="tag-vt">VOLTAC ' + fmtDur(f.voltac) + "</i>");
+  if (f.nuit) tags.push('<i class="tag-n">Nuit ' + fmtDur(f.nuit) + "</i>");
+  if (f.sil) tags.push('<i class="tag-sil">SIL ' + fmtDur(f.sil) + "</i>");
+  if (f.vtn) tags.push('<i class="tag-vtn">VTN ' + fmtDur(f.vtn) + "</i>");
+  if (f.vsv) tags.push('<i class="tag-v">VSV ' + fmtDur(f.vsv) + "</i>");
+  return '<button type="button" class="frow' + (f.simu ? " simu" : "") + '" data-id="' + esc(f.id) + '">' +
+    '<span class="fday"><b class="num">' + d.getDate() + "</b><small>" + esc(wd) + "</small></span>" +
+    '<span class="fmain"><span class="fl1">' + esc(f.type || "Appareil non renseigné") + (f.immat ? " <em>" + esc(f.immat) + "</em>" : "") + "</span>" +
+      (f.mission ? '<span class="fl2 mis">' + esc(f.mission) + "</span>" : "") +
+      (l3 ? '<span class="fl2">' + esc(l3) + "</span>" : "") +
+      (pt ? '<span class="fl3">' + esc(pt) + "</span>" : "") +
+      (tt ? '<span class="fl3">Tirs : ' + esc(tt) + "</span>" : "") +
+      (ctrlText(f) ? '<span class="fl3 ctrl">' + esc(ctrlText(f)) + "</span>" : "") +
+      (f.rem ? '<span class="fl3 rem">' + esc(f.rem) + "</span>" : "") + "</span>" +
+    '<span class="ftime"><b class="num">' + fmtDur(f.total) + "</b>" + (tags.length ? '<span class="tags num">' + tags.join("") + "</span>" : "") + "</span>" +
+  "</button>";
+}
+
+/* =============================================================
+   VUE TOTAUX
+   ============================================================= */
+function agg(list){
+  const a = {n: 0, total: 0, jour: 0, voltac: 0, nuit: 0, sil: 0, vtn: 0, vsv: 0, proc: 0, simuN: 0, simuT: 0};
+  list.forEach(f => {
+    if (f.simu){ a.simuN++; a.simuT += f.total; return; }
+    a.n++;
+    ["total", "jour", "voltac", "nuit", "sil", "vtn", "vsv"].forEach(k => { a[k] += f[k] || 0; });
+    a.proc += procSum(f);
+  });
+  return a;
+}
+function breakdown(list, key, skipEmpty){
+  const m = new Map();
+  list.forEach(f => {
+    if (f.simu || (skipEmpty && !f[key])) return;
+    const k = f[key] || "Non renseigné";
+    const o = m.get(k) || {k, n: 0, jour: 0, nuit: 0, total: 0};
+    o.n++; o.jour += f.jour; o.nuit += f.nuit; o.total += f.total;
+    m.set(k, o);
+  });
+  return [...m.values()].sort((a, b) => b.total - a.total);
+}
+function tableHTML(title, head, rows){
+  if (!rows.length) return "";
+  return '<div class="card"><h2>' + title + '</h2><table class="bd num"><thead><tr><th>' + head + "</th><th>Vols</th><th>Jour</th><th>Nuit</th><th>Total</th></tr></thead><tbody>" +
+    rows.map(r => "<tr><td>" + esc(r.k) + "</td><td>" + r.n + "</td><td>" + fmtDur(r.jour) + "</td><td>" + fmtDur(r.nuit) + "</td><td>" + fmtDur(r.total) + "</td></tr>").join("") +
+    "</tbody></table></div>";
+}
+function renderTotaux(){
+  const cy = new Date().getFullYear(), today = todayISO();
+  const years = new Set([cy]);
+  DB.flights.forEach(f => years.add(+f.date.slice(0, 4)));
+  const opts = [["12m", "12 derniers mois"]].concat([...years].sort((a, b) => b - a).map(y => ["y:" + y, "Année " + y]), [["all", "Depuis le début"]]);
+  if (!opts.some(o => o[0] === UI.period)) UI.period = "y:" + cy;
+  $("periodSel").innerHTML = opts.map(([v, l]) => '<option value="' + v + '"' + (v === UI.period ? " selected" : "") + ">" + l + "</option>").join("");
+
+  const p = UI.period, cut12 = daysAgoISO(365);
+  const inP = f => p === "all" ? true : p === "12m" ? (f.date > cut12 && f.date <= today) : f.date.startsWith(p.slice(2));
+  const list = DB.flights.filter(inP);
+  const real = list.filter(f => !f.simu);
+  const a = agg(list);
+  const plabel = p === "all" ? "depuis le début du carnet" : p === "12m" ? "sur les 12 derniers mois" : "en " + p.slice(2);
+  const pc = v => a.total ? (v / a.total * 100).toFixed(2) : 0;
+  const pj = a.total ? Math.round(a.jour / a.total * 100) : 0;
+  const stat = (v, label, color) => '<div class="stat"><b>' + v + "</b><span>" + (color ? '<i style="background:var(' + color + ')"></i>' : "") + label + "</span></div>";
+
+  /* synthèse */
+  $("totHero").innerHTML =
+    '<div class="hero-num num">' + fmtDur(a.total) + "</div>" +
+    '<div class="hero-sub">' + "heures de vol " + plabel + ", " + plural(a.n, "vol") + "</div>" +
+    '<div class="split" role="img" aria-label="Répartition jour et nuit">' +
+      '<span style="width:' + pc(a.jour) + '%;background:var(--sand)"></span>' +
+      '<span style="width:' + pc(a.nuit) + '%;background:var(--night)"></span></div>' +
+    '<div class="legend num">' +
+      '<div><i style="background:var(--sand)"></i>Jour<b>' + fmtDur(a.jour) + (a.total ? "<small>" + pj + " %</small>" : "") + "</b></div>" +
+      '<div><i style="background:var(--night)"></i>Nuit<b>' + fmtDur(a.nuit) + (a.total ? "<small>" + (100 - pj) + " %</small>" : "") + "</b></div></div>" +
+    '<div class="stats num">' +
+      stat(fmtDur(a.voltac), "VOLTAC, de jour", "--voltac") +
+      stat(fmtDur(a.sil), "SIL, de nuit", "--sil") +
+      stat(fmtDur(a.vtn), "VTN, de nuit", "--vtn") +
+      stat(fmtDur(a.vsv), "VSV, jour et nuit", "--vsv") +
+      stat(a.proc, "Procédures en vol") +
+      stat(fmtDur(a.simuT), "Simulateur, " + plural(a.simuN, "séance")) + "</div>";
+
+  /* objectif 12 mois glissants */
+  const g = goalInfo();
+  $("totObj").innerHTML = (p === "12m" && g.objMin) ?
+    '<div class="card"><h2>Objectif 12 mois glissants</h2><div class="objline num"><b>' + fmtDur(g.h12) + "</b>sur " + g.objLabel + "</div>" +
+    goalBar(g) + '<p class="note num">' + g.msg + "</p></div>" : "";
+
+  /* histogramme */
+  const L = "JFMAMJJASOND";
+  let buckets = [];
+  if (p.startsWith("y:")){
+    const y = p.slice(2);
+    for (let m = 1; m <= 12; m++) buckets.push({k: y + "-" + z2(m), lab: L[m - 1]});
+  } else if (p === "12m"){
+    const d = new Date();
+    for (let i = 11; i >= 0; i--){
+      const x = new Date(d.getFullYear(), d.getMonth() - i, 1);
+      buckets.push({k: isoDate(x).slice(0, 7), lab: L[x.getMonth()]});
+    }
+  } else {
+    [...new Set(real.map(f => f.date.slice(0, 4)))].sort().forEach(y => buckets.push({k: y, lab: "’" + y.slice(2)}));
+  }
+  const bm = {};
+  real.forEach(f => { const k = p === "all" ? f.date.slice(0, 4) : f.date.slice(0, 7); bm[k] = (bm[k] || 0) + f.total; });
+  const max = Math.max(1, ...buckets.map(b => bm[b.k] || 0));
+  const curK = p === "all" ? String(cy) : today.slice(0, 7);
+  $("totBars").innerHTML = buckets.length ?
+    '<div class="card"><h2>' + (p === "all" ? "Heures par année" : "Heures par mois") + '</h2><div class="bars num">' +
+    buckets.map(b => {
+      const v = bm[b.k] || 0;
+      return '<div class="bar' + (b.k === curK ? " cur" : "") + '" title="' + fmtDur(v) + ' h"><div class="col"><em>' + (v ? Math.round(v / 60) : "") +
+        '</em><i style="height:' + (v ? Math.max(2, v / max * 100).toFixed(1) : 0) + '%"></i></div><small>' + b.lab + "</small></div>";
+    }).join("") + '</div><p class="note">Valeurs arrondies à l\'heure.</p></div>' : "";
+
+  /* procédures */
+  const names = procNames(list);
+  const past = DB.flights.filter(f => f.date <= today);
+  const prow = names.map(nm => {
+    let vol = 0, sim = 0;
+    list.forEach(f => { const v = (f.proc || {})[nm] || 0; if (f.simu) sim += v; else vol += v; });
+    return {nm, vol, sim, last: past.find(f => (f.proc || {})[nm] > 0)};
+  });
+  const hasSim = prow.some(r => r.sim);
+  $("totProcs").innerHTML = names.length ?
+    '<div class="card"><h2>Procédures</h2><table class="bd num"><thead><tr><th>Type</th><th>En vol</th>' + (hasSim ? "<th>Simu</th>" : "") + "<th>Dernière</th></tr></thead><tbody>" +
+    prow.map(r => "<tr><td>" + esc(r.nm) + "</td><td>" + r.vol + "</td>" + (hasSim ? "<td>" + r.sim + "</td>" : "") +
+      "<td>" + (r.last ? frDate(r.last.date) : "Aucune") + "</td></tr>").join("") +
+    '</tbody></table><p class="note">Nombres sur la période choisie. La dernière procédure est datée à ce jour, simulateur compris.</p></div>' : "";
+
+  /* munitions tirées (vols réels) */
+  const anyTir = DB.flights.some(f => !f.simu && TIR_KEYS.some(k => (f.tirs || {})[k]));
+  $("totTirs").innerHTML = anyTir ?
+    '<div class="card"><h2>Munitions tirées</h2><table class="bd num"><thead><tr><th>Arme</th><th>Jour</th><th>Nuit</th><th>Total</th></tr></thead><tbody>' +
+    ARMES.map(([k, l]) => {
+      const j = real.reduce((s, f) => s + ((f.tirs || {})[k + "J"] || 0), 0), n = real.reduce((s, f) => s + ((f.tirs || {})[k + "N"] || 0), 0);
+      return "<tr><td>" + l + "</td><td>" + j + "</td><td>" + n + "</td><td>" + (j + n) + "</td></tr>";
+    }).join("") + '</tbody></table><p class="note">Sur la période choisie.</p></div>' : "";
+
+  /* répartitions */
+  $("totTables").innerHTML =
+    tableHTML("Par appareil", "Appareil", breakdown(list, "type")) +
+    tableHTML("Par fonction", "Fonction", breakdown(list, "fonction")) +
+    tableHTML("Par nature de vol", "Nature", breakdown(list, "nature")) +
+    tableHTML("Par équipier", "Équipier", breakdown(list, "equipier", true));
+
+  /* récence, toujours à la date du jour */
+  const all = past.filter(f => !f.simu);
+  const rows = [
+    ["Dernier vol", all[0]],
+    ["Dernier vol de nuit", all.find(f => f.nuit > 0)],
+    ["Dernier SIL", all.find(f => f.sil > 0)],
+    ["Dernier VTN", all.find(f => f.vtn > 0)],
+    ["Dernier VOLTAC", all.find(f => f.voltac > 0)],
+    ["Dernier VSV", all.find(f => f.vsv > 0)]
+  ];
+  const lim2 = monthsAgoISO(2), lim3 = monthsAgoISO(3);
+  /* dernière date : saisie du carnet ou date antérieure (Réglages), la plus récente l'emporte */
+  const lastDate = (pred, seedKey) => {
+    const f = past.find(pred), sd = DB.settings.seed[seedKey] || "";
+    const d = f ? f.date : "";
+    return sd && sd <= today && sd > d ? sd : d;
+  };
+  const dueRow = (label, last, months) => {
+    if (!last) return kvHTML(label, "Aucun", "", "");
+    const due = addMonthsISO(last, months), st = dueState(due);
+    return kvHTML(label, frDate(last), (st === "late" ? "expiré, échéance " : "valable jusqu'au ") + frDate(due), st);
+  };
+  /* PU : une séance en vol par an, une séance simulateur 6 mois après la séance en vol */
+  const puV = lastDate(f => !f.simu && f.pu, "pu_vol"), puS = lastDate(f => f.simu && f.pu, "pu_sim");
+  let puSimRow;
+  if (!puV) puSimRow = kvHTML("PU simulateur", puS ? frDate(puS) : "Aucune", "", "");
+  else if (puS && puS > puV) puSimRow = kvHTML("PU simulateur", frDate(puS), "à jour pour ce cycle", "");
+  else {
+    const due = addMonthsISO(puV, 6), st = dueState(due);
+    puSimRow = kvHTML("PU simulateur", puS ? frDate(puS) : "Aucune", (st === "late" ? "en retard, échéance " : "à faire avant le ") + frDate(due), st);
+  }
+  $("totRecence").innerHTML = '<div class="card"><h2>Récence à ce jour</h2>' +
+    rows.map(([k, f]) => kvHTML(k, f ? frDate(f.date) : "Aucun", f ? sinceLabel(daysSince(f.date)) : "", !f ? "" : f.date < lim3 ? "late" : f.date < lim2 ? "warn" : "")).join("") +
+    '<p class="note">En ambre au-delà de 2 mois, en rouge au-delà de 3 mois.</p>' +
+    '<h3 class="sub">Tests annuels</h3>' +
+    TESTS.map(([k, l]) => dueRow(l, lastDate(f => !f.simu && (f.tests || []).includes(k), "test_" + k), 12)).join("") +   // tests : vols réels uniquement
+    '<h3 class="sub">Procédures d\'urgence</h3>' +
+    dueRow("PU en vol", puV, 12) + puSimRow +
+    '<p class="note">Tests et PU passent en ambre dans le mois qui précède l\'échéance, en rouge une fois l\'échéance dépassée. Seuls les tests passés en vol comptent ; la PU simulateur reste à faire dans les 6 mois qui suivent la PU en vol.</p></div>';
+}
+
+/* =============================================================
+   VUE RÉGLAGES
+   ============================================================= */
+function renderSettings(){
+  if (listTimer) saveLists(false);   // ne jamais écraser une saisie en attente
+  const s = DB.settings;
+  $("sTypes").value = s.types.join("\n");
+  $("sFonctions").value = s.fonctions.join("\n");
+  $("sNatures").value = s.natures.join("\n");
+  $("sProcs").value = s.procedures.join("\n");
+  $("sObj").value = s.objectif12 ? String(s.objectif12).replace(".", ",") : "";
+  SEEDS.forEach(([k]) => { $("seed_" + k).value = s.seed[k] || ""; });
+  if (DB.lastBackup){
+    const d = new Date(DB.lastBackup);
+    const n = Math.floor((Date.now() - d) / 864e5);
+    $("bkInfo").textContent = "Dernière sauvegarde le " + frDate(isoDate(d)) + ", " + sinceLabel(n) + ".";
+  } else $("bkInfo").textContent = "Aucune sauvegarde effectuée pour l'instant.";
+  const cur = todayISO().slice(0, 7);
+  const months = [...new Set(DB.flights.map(f => f.date.slice(0, 7)).concat(cur))].sort().reverse();
+  if (!months.includes(UI.prMonth)) UI.prMonth = DB.flights.some(f => f.date.startsWith(cur)) ? cur : (months.find(m => m !== cur) || cur);
+  $("prMonth").innerHTML = months.map(m => '<option value="' + m + '"' + (m === UI.prMonth ? " selected" : "") + ">" + ymLabel(m) + "</option>").join("");
+  $("prName").value = s.printName || "";
+  const kb = ((localStorage.getItem(STORE_KEY) || "").length / 1024).toFixed(1).replace(".", ",");
+  $("dataInfo").textContent = plural(DB.flights.length, "vol enregistré", "vols enregistrés") + ", " + kb + " Ko utilisés sur ce téléphone.";
+  $("foot").textContent = "Carnet de vol, version " + APP_VERSION;
+  armButton($("wipeBtn"), "Effacer tous les vols", "Appuyez encore pour tout effacer", () => {
+    DB.flights = []; persist(); renderSettings(); toast("Tous les vols ont été effacés");
+  });
+}
+function parseLines(v){ return [...new Set(v.split("\n").map(x => x.trim()).filter(Boolean))]; }
+
+async function exportJSON(){
+  const payload = {app: "carnet-de-vol", format: 2, exportedAt: new Date().toISOString(), settings: DB.settings, flights: DB.flights};
+  const ok = await shareOrDownload(new Blob([JSON.stringify(payload, null, 1)], {type: "application/json"}), "carnet-de-vol-" + todayISO() + ".json");
+  if (ok){
+    DB.lastBackup = new Date().toISOString(); persist();
+    renderView(); toast("Sauvegarde exportée");
+  }
+}
+function exportCSV(){
+  const csvDec = m => (m / 60).toFixed(1).replace(".", ",");
+  const procs = procNames(DB.flights);
+  const cols = ["Date", "Simulateur", "Appareil", "N° appareil", "Fonction", "Nature", "Mission", "Équipier",
+                "Jour", "dont VOLTAC", "Nuit", "dont SIL", "dont VTN", "dont VSV", "Total"].concat(procs,
+                ARMES.flatMap(([, l]) => [l + " jour", l + " nuit"]), TESTS.map(t => t[1]), ["Procédures d'urgence", "Remarques"]);
+  const q = v => { v = String(v == null ? "" : v); return /[;"\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+  const rows = DB.flights.slice().reverse().map(f => [
+    frDate(f.date), f.simu ? "oui" : "", f.type, f.immat, f.fonction, f.nature, f.mission, f.equipier,
+    csvDec(f.jour), csvDec(f.voltac), csvDec(f.nuit), csvDec(f.sil), csvDec(f.vtn), csvDec(f.vsv), csvDec(f.total)
+  ].concat(procs.map(k => (f.proc || {})[k] || ""), TIR_KEYS.map(k => (f.tirs || {})[k] || ""),
+    TEST_KEYS.map(k => (f.tests || []).includes(k) ? "oui" : ""), [f.pu ? "oui" : "", f.rem]).map(q).join(";"));
+  const csv = "\ufeff" + [cols.join(";")].concat(rows).join("\r\n");
+  shareOrDownload(new Blob([csv], {type: "text/csv"}), "carnet-de-vol-" + todayISO() + ".csv");
+}
+async function onImportFile(e){
+  const file = e.target.files[0]; e.target.value = "";
+  if (!file) return;
+  const panel = $("importPanel");
+  const fail = msg => { panel.innerHTML = "<p>" + esc(msg) + '</p><button type="button" class="btn" id="impCancel">Fermer</button>'; panel.hidden = false; $("impCancel").onclick = closeImport; };
+  let data;
+  try { data = JSON.parse(await file.text()); } catch (err){ return fail("Fichier illisible : ce n'est pas une sauvegarde du carnet de vol."); }
+  const arr = Array.isArray(data) ? data : (data && data.flights);
+  if (!Array.isArray(arr)) return fail("Ce fichier ne contient pas de liste de vols.");
+  const flights = arr.map(normFlight).filter(Boolean);
+  if (!flights.length) return fail("Aucun vol valide dans ce fichier.");
+  const ids = new Set(DB.flights.map(f => f.id));
+  const nouveaux = flights.filter(f => !ids.has(f.id)).length;
+  UI.pending = {flights, settings: data && !Array.isArray(data) ? data.settings : null};
+  panel.innerHTML = "<p><b>" + plural(flights.length, "vol") + "</b> dans le fichier, dont " + nouveaux + " absent" + (nouveaux > 1 ? "s" : "") + " du carnet actuel.</p>" +
+    '<button type="button" class="btn primary" id="impMerge">Fusionner avec le carnet</button>' +
+    '<button type="button" class="btn danger" id="impReplace"></button>' +
+    '<button type="button" class="btn" id="impCancel">Annuler</button>';
+  panel.hidden = false;
+  $("impMerge").onclick = doMerge;
+  armButton($("impReplace"), "Remplacer tout le carnet", "Appuyez encore pour remplacer", doReplace);
+  $("impCancel").onclick = closeImport;
+}
+function closeImport(){ UI.pending = null; $("importPanel").hidden = true; }
+function doMerge(){
+  const map = new Map(DB.flights.map(f => [f.id, f]));
+  let added = 0, updated = 0;
+  UI.pending.flights.forEach(f => {
+    const ex = map.get(f.id);
+    if (!ex){ map.set(f.id, f); added++; }
+    else if ((f.updatedAt || "") > (ex.updatedAt || "")){ map.set(f.id, f); updated++; }
+  });
+  DB.flights = [...map.values()]; sortFlights();
+  const s = UI.pending.settings;
+  if (s) LIST_KEYS.forEach(k => {
+    if (Array.isArray(s[k])) DB.settings[k] = [...new Set(DB.settings[k].concat(s[k].map(x => String(x).trim()).filter(Boolean)))];
+  });
+  persist(); closeImport(); renderSettings();
+  toast(plural(added, "vol ajouté", "vols ajoutés") + (updated ? ", " + updated + " mis à jour" : ""));
+}
+function doReplace(){
+  DB.flights = UI.pending.flights.slice(); sortFlights();
+  if (UI.pending.settings) DB.settings = normSettings(UI.pending.settings);
+  persist(); closeImport(); renderSettings();
+  toast("Carnet remplacé : " + plural(DB.flights.length, "vol"));
+}
+
+/* =============================================================
+   FICHE DE SAISIE
+   Construite une fois par ouverture ; la saisie ne reconstruit
+   jamais le DOM (évite la perte de focus sur iOS).
+   ============================================================= */
+const F = {date: $("fDate"), pu: $("fPu"), immat: $("fImmat"), mission: $("fMission"), equip: $("fEquip"), rem: $("fRem"),
+           jour: $("fJour"), voltac: $("fVoltac"), nuit: $("fNuit"), sil: $("fSil"), vtn: $("fVtn"), vsv: $("fVsv")};
+const FS = {simu: false, type: "", fonction: "", nature: "", proc: {}, tests: []};
+$("fTests").innerHTML = TESTS.map(([k, l]) => '<button type="button" class="chip" data-t="' + k + '" aria-pressed="false">' + l + "</button>").join("");
+function syncTests(){ $("fTests").querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", FS.tests.includes(c.dataset.t))); }
+/* grille des munitions, construite une seule fois */
+$("fTirs").innerHTML = '<span></span><span class="th"><i style="background:var(--sand)"></i>Jour</span><span class="th"><i style="background:var(--night)"></i>Nuit</span>' +
+  ARMES.map(([k, l]) => '<span class="tl">' + l + "</span>" +
+    ["J", "N"].map(s => '<input class="inp tirin" id="t_' + k + s + '" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="0" aria-label="' + l + (s === "J" ? " jour" : " nuit") + '">').join("")).join("");
+const readTirs = () => { const t = {}; TIR_KEYS.forEach(k => { const v = parseInt($("t_" + k).value, 10) || 0; if (v > 0) t[k] = Math.min(v, 9999); }); return t; };
+
+/* Saisie en heures décimales, une décimale au plus, virgule ou point : 1,8 → 108 min */
+function readDur(k){
+  const v = F[k].value.trim().replace(",", ".");
+  if (!v || v === ".") return {min: 0, ok: true};
+  if (!/^\d{0,3}(\.\d?)?$/.test(v)) return {min: 0, ok: false};
+  return {min: Math.round(parseFloat(v) * 60), ok: true};
+}
+function readDurs(){ const d = {}; DUR_KEYS.forEach(k => { d[k] = readDur(k); }); return d; }
+function durCheck(d){
+  const errs = [], bad = new Set();
+  DUR_KEYS.forEach(k => { if (!d[k].ok) bad.add(k); });
+  if (bad.size) errs.push("Durée invalide : une décimale au plus, par exemple 1,8 pour 1\u00a0h\u00a048.");
+  const tot = d.jour.min + d.nuit.min;
+  if (d.voltac.min > d.jour.min){ errs.push("Le VOLTAC dépasse le temps de jour."); bad.add("voltac"); }
+  if (d.sil.min > d.nuit.min){ errs.push("Le SIL dépasse le temps de nuit."); bad.add("sil"); }
+  if (d.vtn.min > d.nuit.min){ errs.push("Le VTN dépasse le temps de nuit."); bad.add("vtn"); }
+  if (d.vsv.min > tot){ errs.push("Le VSV dépasse le temps de vol total."); bad.add("vsv"); }
+  return {errs, bad, tot};
+}
+function updateDurs(){
+  const c = durCheck(readDurs());
+  $("fTotOut").innerHTML = fmtDec(c.tot) + (c.tot ? "<small>soit " + fmtHM(c.tot) + "</small>" : "");
+  DUR_KEYS.forEach(k => F[k].classList.toggle("bad", c.bad.has(k)));
+  const el = $("fHint");
+  el.classList.toggle("warn", c.errs.length > 0);
+  el.textContent = c.errs.length ? c.errs.join(" ") : "Heures décimales, virgule ou point : 1,8 = 1\u00a0h\u00a048. Le VSV se compte de jour comme de nuit.";
+}
+function buildChips(host, list, sel, key){
+  const items = list.slice();
+  if (sel && !items.includes(sel)) items.push(sel);
+  host.dataset.key = key;
+  host.innerHTML = items.map(v => '<button type="button" class="chip" data-v="' + esc(v) + '" aria-pressed="' + (v === sel) + '">' + esc(v) + "</button>").join("");
+}
+function buildProcs(proc){
+  const names = DB.settings.procedures.slice();
+  Object.keys(proc).forEach(k => { if (!names.includes(k)) names.push(k); });
+  FS.proc = {};
+  names.forEach(k => { FS.proc[k] = proc[k] || 0; });
+  $("fProcGroup").hidden = !names.length;
+  $("fProcs").innerHTML = names.map(k =>
+    '<div class="stepper" data-k="' + esc(k) + '"><span class="flab">' + esc(k) + '</span><div class="ctl">' +
+    '<button type="button" data-d="-1" aria-label="' + esc(k) + ' moins un">−</button><output>' + FS.proc[k] + "</output>" +
+    '<button type="button" data-d="1" aria-label="' + esc(k) + ' plus un">+</button></div></div>').join("");
+}
+function fillDatalists(){
+  const opts = vals => [...new Set(vals.filter(Boolean))].slice(0, 60).map(v => '<option value="' + esc(v) + '">').join("");
+  $("dlImmat").innerHTML = opts(DB.flights.filter(f => !FS.type || f.type === FS.type).map(f => f.immat));
+  $("dlMission").innerHTML = opts(DB.flights.map(f => f.mission));
+  $("dlEquip").innerHTML = opts(DB.flights.map(f => f.equipier));
+}
+
+function openForm(id, simuNew){
+  const f = id ? DB.flights.find(x => x.id === id) : null;
+  UI.editingId = f ? f.id : null;
+  let b;
+  if (f) b = f;
+  else {
+    const last = DB.flights.slice().sort((x, y) => (y.createdAt || "").localeCompare(x.createdAt || ""))[0];
+    b = {date: todayISO(), simu: !!simuNew, type: last ? last.type : (DB.settings.types[0] || ""), immat: "",
+         fonction: last ? last.fonction : "", nature: last ? last.nature : "", mission: "", equipier: "",
+         jour: 0, voltac: 0, nuit: 0, sil: 0, vtn: 0, vsv: 0, proc: {}, rem: ""};
+  }
+  F.date.value = b.date; FS.simu = !!b.simu;
+  updateSheetMode();
+  TIR_KEYS.forEach(k => { $("t_" + k).value = (b.tirs || {})[k] || ""; });
+  FS.tests = (b.tests || []).slice(); syncTests();
+  F.pu.checked = !!b.pu;
+  FS.type = b.type || ""; FS.fonction = b.fonction || ""; FS.nature = b.nature || "";
+  buildChips($("fTypeChips"), DB.settings.types, FS.type, "type");
+  buildChips($("fFonctionChips"), DB.settings.fonctions, FS.fonction, "fonction");
+  buildChips($("fNatureChips"), DB.settings.natures, FS.nature, "nature");
+  F.immat.value = b.immat || ""; F.mission.value = b.mission || ""; F.equip.value = b.equipier || ""; F.rem.value = b.rem || "";
+  F.mission.classList.remove("bad"); F.equip.classList.remove("bad");
+  DUR_KEYS.forEach(k => { F[k].value = b[k] ? fmtDec(b[k]) : ""; });
+  buildProcs(b.proc || {});
+  $("fErr").hidden = true;
+  updateDurs(); fillDatalists();
+  const del = $("fDelete");
+  del.hidden = !f;
+  if (f) armButton(del, f.simu ? "Supprimer cette séance" : "Supprimer ce vol", "Appuyez encore pour supprimer", deleteCurrent);
+  $("sheet").classList.add("open"); $("sheet").setAttribute("aria-hidden", "false");
+  document.body.classList.add("lock");
+  $("sheetBody").scrollTop = 0;
+}
+function closeForm(){
+  if (document.activeElement) document.activeElement.blur();
+  $("sheet").classList.remove("open"); $("sheet").setAttribute("aria-hidden", "true");
+  document.body.classList.remove("lock");
+  UI.editingId = null;
+}
+function saveForm(){
+  $("fErr").hidden = true;
+  const d = readDurs(), c = durCheck(d);
+  const proc = {};
+  Object.keys(FS.proc).forEach(k => { if (FS.proc[k] > 0) proc[k] = FS.proc[k]; });
+  const f = {
+    date: F.date.value, simu: FS.simu, type: FS.type, immat: F.immat.value.trim().toUpperCase(),
+    fonction: FS.fonction, nature: FS.simu ? "" : FS.nature, tirs: FS.simu ? {} : readTirs(),
+    tests: TEST_KEYS.filter(k => FS.tests.includes(k)), pu: F.pu.checked, mission: F.mission.value.trim(), equipier: F.equip.value.trim(),
+    jour: d.jour.min, voltac: d.voltac.min, nuit: d.nuit.min, sil: d.sil.min, vtn: d.vtn.min, vsv: d.vsv.min,
+    total: c.tot, proc, rem: F.rem.value.trim()
+  };
+  const errs = [];
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(f.date)) errs.push("Indiquez la date du vol.");
+  if (!f.type) errs.push("Choisissez l'appareil.");
+  /* mission et équipier obligatoires, en vol comme au simulateur */
+  if (!f.mission){ errs.push("Indiquez la mission."); F.mission.classList.add("bad"); }
+  if (!f.equipier){ errs.push("Indiquez l'autre membre d'équipage."); F.equip.classList.add("bad"); }
+  errs.push(...c.errs);
+  if (!c.tot && !c.bad.has("jour") && !c.bad.has("nuit")){ errs.push("Indiquez un temps de jour ou de nuit."); c.bad.add("jour"); c.bad.add("nuit"); }
+  if (errs.length){
+    c.bad.forEach(k => F[k].classList.add("bad"));
+    $("fErr").innerHTML = errs.map(esc).join("<br>"); $("fErr").hidden = false;
+    $("sheetBody").scrollTop = 0;
+    return;
+  }
+  const now = new Date().toISOString();
+  const editing = !!UI.editingId;
+  if (editing){
+    const i = DB.flights.findIndex(x => x.id === UI.editingId);
+    if (i >= 0) DB.flights[i] = Object.assign({}, DB.flights[i], f, {updatedAt: now});
+  } else {
+    DB.flights.push(Object.assign({id: uid(), createdAt: now, updatedAt: now}, f));
+  }
+  sortFlights();
+  if (!persist()) return;
+  askPersist();
+  closeForm(); renderView();
+  toast(f.simu ? (editing ? "Séance simulateur modifiée" : "Séance simulateur enregistrée") : (editing ? "Vol modifié" : "Vol enregistré"));
+}
+function deleteCurrent(){
+  const i = DB.flights.findIndex(x => x.id === UI.editingId);
+  if (i < 0) return;
+  const removed = DB.flights.splice(i, 1)[0];
+  persist(); closeForm(); renderView();
+  toast("Vol supprimé", "Annuler", () => { DB.flights.push(removed); sortFlights(); persist(); renderView(); });
+}
+
+/* =============================================================
+   ÉVÉNEMENTS
+   ============================================================= */
+document.querySelectorAll(".tabbar button").forEach(b => b.addEventListener("click", () => setView(b.dataset.view)));
+$("addBtn").addEventListener("click", openChooser);
+$("volsList").addEventListener("click", e => {
+  const r = e.target.closest(".frow");
+  if (r){ openForm(r.dataset.id); return; }
+  if (e.target.id === "moreBtn"){ UI.limit += 200; renderList(); }
+});
+$("typeChips").addEventListener("click", e => {
+  const c = e.target.closest(".chip"); if (!c) return;
+  UI.typeFilter = c.dataset.type; UI.limit = 200; renderVols();
+});
+$("q").addEventListener("input", () => { UI.q = $("q").value; UI.limit = 200; renderList(); });
+$("nagBtn").addEventListener("click", exportJSON);
+$("periodSel").addEventListener("change", e => { UI.period = e.target.value; renderTotaux(); });
+
+$("exportJson").addEventListener("click", exportJSON);
+$("exportCsv").addEventListener("click", exportCSV);
+$("importBtn").addEventListener("click", () => $("importFile").click());
+$("importFile").addEventListener("change", onImportFile);
+/* Listes de saisie : enregistrées automatiquement pendant la frappe (0,5 s après la
+   dernière touche) et dès qu'on quitte le champ. Rien n'est re-dessiné pendant la
+   frappe, le curseur ne bouge donc pas. */
+let listTimer = null;
+function saveLists(showToast){
+  clearTimeout(listTimer); listTimer = null;
+  const t = parseLines($("sTypes").value);
+  if (t.length) DB.settings.types = t;            // jamais de liste d'appareils vide
+  DB.settings.fonctions = parseLines($("sFonctions").value);
+  DB.settings.natures = parseLines($("sNatures").value);
+  DB.settings.procedures = parseLines($("sProcs").value);
+  persist();
+  if (showToast) toast(t.length ? "Listes enregistrées" : "La liste des appareils ne peut pas être vide");
+}
+["sTypes", "sFonctions", "sNatures", "sProcs"].forEach(id => {
+  $(id).addEventListener("input", () => { clearTimeout(listTimer); listTimer = setTimeout(() => saveLists(false), 500); });
+  $(id).addEventListener("change", () => saveLists(true));
+});
+$("seedGrid").innerHTML = SEEDS.map(([k, l]) => '<label class="field"><span>' + l + '</span><input class="inp" type="date" id="seed_' + k + '"></label>').join("");
+$("seedGrid").addEventListener("change", e => {
+  const k = e.target.id.replace("seed_", "");
+  DB.settings.seed[k] = ISO_RE.test(e.target.value) ? e.target.value : "";
+  persist(); toast("Date enregistrée");
+});
+$("sObj").addEventListener("change", () => {
+  const v = parseFloat($("sObj").value.replace(",", "."));
+  DB.settings.objectif12 = isFinite(v) && v > 0 ? Math.round(v * 10) / 10 : 0;
+  persist(); renderSettings();
+});
+
+$("fCancel").addEventListener("click", closeForm);
+$("fSave").addEventListener("click", saveForm);
+["fTypeChips", "fFonctionChips", "fNatureChips"].forEach(id => $(id).addEventListener("click", e => {
+  const c = e.target.closest(".chip"); if (!c) return;
+  const host = e.currentTarget, key = host.dataset.key, v = c.dataset.v;
+  FS[key] = (FS[key] === v && key !== "type") ? "" : v;
+  host.querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", x.dataset.v === FS[key]));
+  if (key === "type") fillDatalists();
+}));
+DUR_KEYS.forEach(k => {
+  F[k].addEventListener("input", updateDurs);
+  F[k].addEventListener("blur", () => {   // harmonise l'affichage : 1.8 → 1,8 ; 2 → 2,0
+    const d = readDur(k);
+    if (d.ok && F[k].value.trim()) F[k].value = d.min ? fmtDec(d.min) : "";
+  });
+});
+[F.mission, F.equip].forEach(el => el.addEventListener("input", () => el.classList.remove("bad")));
+$("fTests").addEventListener("click", e => {
+  const c = e.target.closest(".chip"); if (!c) return;
+  const k = c.dataset.t;
+  FS.tests = FS.tests.includes(k) ? FS.tests.filter(x => x !== k) : FS.tests.concat(k);
+  syncTests();
+});
+$("fTirs").addEventListener("input", e => {
+  if (e.target.classList.contains("tirin")) e.target.value = e.target.value.replace(/\D/g, "").slice(0, 4);
+});
+$("fProcs").addEventListener("click", e => {
+  const b = e.target.closest("button[data-d]"); if (!b) return;
+  const st = b.closest(".stepper"), k = st.dataset.k;
+  FS.proc[k] = Math.max(0, Math.min(99, (FS.proc[k] || 0) + +b.dataset.d));
+  st.querySelector("output").textContent = FS.proc[k];
+});
+
+/* ---------- choix vol réel / simulateur ---------- */
+function updateSheetMode(){
+  const s = FS.simu, ed = !!UI.editingId;
+  document.querySelector(".sheet-panel").classList.toggle("simu", s);
+  $("fNatureFld").hidden = s;     // pas de nature de vol en simulateur
+  $("fTirsGroup").hidden = s;     // munitions : vols réels uniquement
+  $("sheetTitle").textContent = ed ? (s ? "Modifier la séance" : "Modifier le vol") : (s ? "Simulateur" : "Nouveau vol");
+}
+function openChooser(){
+  $("chooser").classList.add("open"); $("chooser").setAttribute("aria-hidden", "false");
+  document.body.classList.add("lock");
+}
+function closeChooser(){
+  $("chooser").classList.remove("open"); $("chooser").setAttribute("aria-hidden", "true");
+  document.body.classList.remove("lock");
+}
+$("chooser").addEventListener("click", e => {
+  if (e.target.id === "chooser"){ closeChooser(); return; }
+  const c = e.target.closest(".choice");
+  if (c){ closeChooser(); openForm(null, c.dataset.simu === "1"); }
+});
+$("chooserCancel").addEventListener("click", closeChooser);
+
+/* =============================================================
+   IMPRESSION MENSUELLE A5
+   Les pages sont composées hors écran (#pvMeasure) en millimètres,
+   remplies ligne par ligne jusqu'au bas de page, puis affichées en
+   aperçu et imprimées (@page A5).
+   ============================================================= */
+const PR_COLS = [8.5, 16, 8.5, 28, 7, 9.5, 7, 6.5, 6.5, 6.5, 8, 22];   // mm, total 134 = 148 − 2 × 7
+const PR_HEAD = "<colgroup>" + PR_COLS.map(w => '<col style="width:' + w + 'mm">').join("") + "</colgroup>" +
+  '<thead><tr><th rowspan="2">Date</th><th rowspan="2">Appareil</th><th rowspan="2">Fct</th><th rowspan="2">Mission, nature, équipage</th>' +
+  '<th colspan="2">Jour</th><th colspan="3">Nuit</th><th rowspan="2">VSV</th><th rowspan="2">Total</th><th rowspan="2">Observations</th></tr>' +
+  "<tr><th>h</th><th>dont VOLTAC</th><th>h</th><th>dont SIL</th><th>dont VTN</th></tr></thead>";
+function ymLabel(ym){ const [y, m] = ym.split("-").map(Number); return cap(new Date(y, m - 1, 1).toLocaleDateString("fr-FR", {month: "long", year: "numeric"})); }
+function ymEnd(ym){ const [y, m] = ym.split("-").map(Number); return isoDate(new Date(y, m, 0)); }
+const dz = m => m ? fmtDec(m) : "";
+function tirShort(f){
+  return ARMES.map(([k, l]) => {
+    const j = (f.tirs || {})[k + "J"] || 0, n = (f.tirs || {})[k + "N"] || 0;
+    return (j || n) ? l + " " + [j ? j + "J" : "", n ? n + "N" : ""].filter(Boolean).join(" ") : "";
+  }).filter(Boolean).join(", ");
+}
+function prRow(f){
+  const l2 = [f.nature, f.equipier ? "avec " + f.equipier : ""].filter(Boolean).join(", ");
+  const obs = [procText(f), ctrlText(f), tirShort(f)].filter(Boolean).map(esc).join(", ");
+  return "<tr" + (f.simu ? ' class="sim"' : "") + "><td>" + f.date.slice(8, 10) + "/" + f.date.slice(5, 7) + "</td>" +
+    "<td>" + esc(f.type) + (f.immat ? "<br><b>" + esc(f.immat) + "</b>" : "") + "</td><td>" + esc(f.fonction) + "</td>" +
+    "<td>" + (f.mission ? "<b>" + esc(f.mission) + "</b>" + (l2 ? "<br>" : "") : "") + esc(l2) + "</td>" +
+    ["jour", "voltac", "nuit", "sil", "vtn", "vsv"].map(k => '<td class="n">' + dz(f[k]) + "</td>").join("") +
+    '<td class="n b">' + fmtDec(f.total) + "</td><td>" + obs + (f.rem ? (obs ? "<br>" : "") + "<i>" + esc(f.rem) + "</i>" : "") + "</td></tr>";
+}
+function prTotal(label, list){
+  return '<tr class="tot"><td colspan="4">' + label + "</td>" +
+    ["jour", "voltac", "nuit", "sil", "vtn", "vsv", "total"].map(k => '<td class="n">' + fmtDec(sumMin(list, k)) + "</td>").join("") + "<td></td></tr>";
+}
+function aggPrint(list){
+  const r = {n: 0, total: 0, jour: 0, voltac: 0, nuit: 0, sil: 0, vtn: 0, vsv: 0, simN: 0, simT: 0, proc: {}, procS: {}, tirs: {}, types: {}};
+  list.forEach(f => {
+    if (f.simu){
+      r.simN++; r.simT += f.total;
+      Object.keys(f.proc || {}).forEach(k => { r.procS[k] = (r.procS[k] || 0) + f.proc[k]; });
+      return;
+    }
+    r.n++;
+    ["total", "jour", "voltac", "nuit", "sil", "vtn", "vsv"].forEach(k => { r[k] += f[k] || 0; });
+    Object.keys(f.proc || {}).forEach(k => { r.proc[k] = (r.proc[k] || 0) + f.proc[k]; });
+    TIR_KEYS.forEach(k => { const v = (f.tirs || {})[k] || 0; if (v) r.tirs[k] = (r.tirs[k] || 0) + v; });
+    if (f.type) r.types[f.type] = (r.types[f.type] || 0) + f.total;
+  });
+  return r;
+}
+function recapHTML(ym, month, year){
+  const y = ym.slice(0, 4), m = aggPrint(month), a = aggPrint(year);
+  const mName = cap(new Date(+y, +ym.slice(5, 7) - 1, 1).toLocaleDateString("fr-FR", {month: "long"}));
+  const pct = (v, t) => t ? " <small>(" + Math.round(v / t * 100) + " %)</small>" : "";
+  const row = (l, u, v) => "<tr><td>" + l + '</td><td class="n">' + u + '</td><td class="n">' + v + "</td></tr>";
+  const head = t => "<thead><tr><th>" + t + "</th><th>" + mName + "</th><th>Cumul " + y + "</th></tr></thead>";
+  const types = Object.keys(a.types).sort((p, q) => a.types[q] - a.types[p]);
+  const left = '<table class="rc">' + head("Heures de vol") + "<tbody>" +
+    row("Vols", m.n, a.n) +
+    row("<b>Total</b>", "<b>" + fmtDec(m.total) + "</b>", "<b>" + fmtDec(a.total) + "</b>") +
+    row("Jour", fmtDec(m.jour) + pct(m.jour, m.total), fmtDec(a.jour) + pct(a.jour, a.total)) +
+    row("dont VOLTAC", fmtDec(m.voltac), fmtDec(a.voltac)) +
+    row("Nuit", fmtDec(m.nuit) + pct(m.nuit, m.total), fmtDec(a.nuit) + pct(a.nuit, a.total)) +
+    row("dont SIL", fmtDec(m.sil), fmtDec(a.sil)) +
+    row("dont VTN", fmtDec(m.vtn), fmtDec(a.vtn)) +
+    row("VSV", fmtDec(m.vsv), fmtDec(a.vsv)) +
+    types.map(t => row(esc(t), fmtDec(m.types[t] || 0), fmtDec(a.types[t]))).join("") +
+    row("Simulateur <small>(séances)</small>", fmtDec(m.simT) + " <small>(" + m.simN + ")</small>", fmtDec(a.simT) + " <small>(" + a.simN + ")</small>") +
+    "</tbody></table>";
+  const pn = [...new Set(DB.settings.procedures.concat(Object.keys(a.proc), Object.keys(a.procS)))].filter(k => (a.proc[k] || 0) + (a.procS[k] || 0));
+  const vs = (r, k) => (r.proc[k] || 0) + " / " + (r.procS[k] || 0);
+  const tk = TIR_KEYS.filter(k => a.tirs[k]);
+  const right = '<table class="rc">' + head("Procédures <small>vol / simu</small>") + "<tbody>" +
+      (pn.length ? pn.map(k => row(esc(k), vs(m, k), vs(a, k))).join("") : '<tr><td colspan="3" class="mute">Aucune procédure</td></tr>') + "</tbody></table>" +
+    '<table class="rc">' + head("Munitions tirées") + "<tbody>" +
+      (tk.length ? tk.map(k => row(ARMES.find(x => k.startsWith(x[0]))[1] + (k.endsWith("J") ? " jour" : " nuit"), m.tirs[k] || 0, a.tirs[k])).join("")
+                 : '<tr><td colspan="3" class="mute">Aucun tir</td></tr>') + "</tbody></table>";
+  return '<div class="blk"><div class="cap">Récapitulatif</div><div class="recap">' + left + "<div>" + right + "</div></div></div>";
+}
+function notesHTML(ym, month, year){
+  const end = ymEnd(ym), y = ym.slice(0, 4);
+  const labelOf = f => [ctrlText(f).replace(/\bPU\b/, f.simu ? "PU simulateur" : "PU en vol")].concat(f.simu && (f.tests || []).length ? ["(simulateur)"] : []).join(" ");
+  const mItems = month.filter(f => (f.tests || []).length || f.pu).map(f => frDate(f.date).slice(0, 5) + " " + esc(labelOf(f)));
+  const lastIn = pred => year.slice().sort((p, q) => q.date.localeCompare(p.date)).find(pred);
+  const yItems = TESTS.map(([k, l]) => [l, lastIn(f => !f.simu && (f.tests || []).includes(k))])
+    .concat([["PU en vol", lastIn(f => !f.simu && f.pu)], ["PU simulateur", lastIn(f => f.simu && f.pu)]])
+    .filter(x => x[1]).map(([l, f]) => l + " " + frDate(f.date).slice(0, 5));
+  const cut = isoDate(new Date(Date.parse(end + "T12:00:00") - 365 * 864e5));
+  const h12 = sumMin(DB.flights.filter(f => !f.simu && f.date > cut && f.date <= end), "total");
+  const obj = +DB.settings.objectif12 || 0;
+  return '<div class="blk notes">' +
+    "<p><b>Contrôles du mois :</b> " + (mItems.length ? mItems.join(", ") : "aucun") + ".</p>" +
+    "<p><b>Derniers contrôles en " + y + " :</b> " + (yItems.length ? yItems.join(", ") : "aucun") + ".</p>" +
+    "<p><b>12 mois glissants au " + frDate(end) + " :</b> " + fmtDec(h12) + " h de vol réel" + (obj ? " sur un objectif de " + String(obj).replace(".", ",") + " h" : "") + ".</p></div>";
+}
+function buildPrintPages(ym){
+  const byDate = (p, q) => p.date.localeCompare(q.date) || (p.createdAt || "").localeCompare(q.createdAt || "");
+  const month = DB.flights.filter(f => f.date.startsWith(ym)).sort(byDate);
+  const vols = month.filter(f => !f.simu), sims = month.filter(f => f.simu);
+  const end = ymEnd(ym), year = DB.flights.filter(f => f.date.startsWith(ym.slice(0, 4)) && f.date <= end);
+  const blocks = [];
+  vols.forEach(f => blocks.push({t: "vols", h: prRow(f)}));
+  if (vols.length) blocks.push({t: "vols", h: prTotal("Total des vols du mois", vols)});
+  sims.forEach(f => blocks.push({t: "sims", h: prRow(f)}));
+  if (sims.length) blocks.push({t: "sims", h: prTotal("Total simulateur du mois", sims)});
+  if (!month.length) blocks.push({h: '<p class="blk mute">Aucun vol ni séance simulateur ce mois-ci.</p>'});
+  blocks.push({h: recapHTML(ym, month, year)});
+  blocks.push({h: notesHTML(ym, month, year)});
+  /* certification et signatures : bloc indivisible, toujours en fin de relevé */
+  blocks.push({h: '<div class="blk sign"><p class="cert">Certifié exact et conforme au registre des services aériens</p>' +
+    '<div class="sig"><div>Signature du commandant d\'unité</div><div>Signature de l\'intéressé</div></div></div>'});
+
+  const host = $("pvMeasure"), name = DB.settings.printName || "";
+  const caps = {vols: "Vols", sims: "Séances simulateur"}, started = {}, pages = [];
+  let content = null, tbody = null, tkind = null;
+  host.innerHTML = "";
+  const newPage = () => {
+    const pg = document.createElement("div");
+    pg.className = "a5";
+    pg.innerHTML = (pages.length
+      ? '<div class="a5-head sm"><b>' + ymLabel(ym) + ", suite</b><span>" + esc(name) + "</span></div>"
+      : '<div class="a5-head"><div><div class="k">Relevé d\'activité aéronautique</div><h1>' + ymLabel(ym) + '</h1></div><div class="r">' +
+        (name ? "<b>" + esc(name) + "</b><br>" : "") + "Édité le " + frDate(todayISO()) + "</div></div>") +
+      '<div class="a5c"></div><div class="a5-foot"><span>Carnet de vol</span><span class="pg"></span></div>';
+    host.appendChild(pg); pages.push(pg);
+    content = pg.querySelector(".a5c"); tbody = null; tkind = null;
+  };
+  // hauteur réellement occupée, avec ~2 mm de marge de sécurité pour l'impression
+  const over = () => {
+    const last = content.lastElementChild;
+    return !!last && last.getBoundingClientRect().bottom - content.getBoundingClientRect().top > content.clientHeight - 8;
+  };
+  const openTable = t => {
+    content.insertAdjacentHTML("beforeend", '<div class="blk tb"><div class="cap">' + caps[t] + (started[t] ? ", suite" : "") + '</div><table class="fl">' + PR_HEAD + "<tbody></tbody></table></div>");
+    tbody = content.lastElementChild.querySelector("tbody"); tkind = t;
+  };
+  newPage();
+  blocks.forEach(b => {
+    if (b.t){
+      if (tkind !== b.t) openTable(b.t);
+      tbody.insertAdjacentHTML("beforeend", b.h);
+      if (over() && !(tbody.children.length === 1 && content.children.length === 1)){
+        tbody.lastElementChild.remove();
+        if (!tbody.children.length) tbody.closest(".tb").remove();
+        newPage(); openTable(b.t);
+        tbody.insertAdjacentHTML("beforeend", b.h);
+      }
+      started[b.t] = true;
+    } else {
+      tbody = null; tkind = null;
+      content.insertAdjacentHTML("beforeend", b.h);
+      if (over() && content.children.length > 1){
+        content.lastElementChild.remove();
+        newPage();
+        content.insertAdjacentHTML("beforeend", b.h);
+      }
+    }
+  });
+  pages.forEach((pg, i) => { pg.querySelector(".pg").textContent = "Page " + (i + 1) + " / " + pages.length; });
+  return pages;
+}
+/* l'aperçu est réduit pour tenir dans la largeur de l'écran (148 mm = 559 px CSS) */
+function fitPreview(){
+  const vw = document.documentElement.clientWidth || window.innerWidth;
+  $("pvPages").style.zoom = Math.min(1, (vw - 24) / (148 * 96 / 25.4)).toFixed(3);
+}
+function openPrintView(ym){
+  const pages = buildPrintPages(ym), box = $("pvPages");
+  fitPreview();
+  box.innerHTML = "";
+  pages.forEach(pg => box.appendChild(pg));
+  $("pvTitle").textContent = ymLabel(ym);
+  UI.printTitle = "Carnet de vol " + ymLabel(ym);
+  $("printView").hidden = false;
+  document.body.classList.add("lock");
+}
+function closePrintView(){
+  $("printView").hidden = true; $("pvPages").innerHTML = "";
+  document.body.classList.remove("lock");
+}
+$("prMonth").addEventListener("change", e => { UI.prMonth = e.target.value; });
+$("prName").addEventListener("change", () => { DB.settings.printName = $("prName").value.trim().slice(0, 80); persist(); });
+$("prGo").addEventListener("click", () => openPrintView($("prMonth").value));
+$("pvClose").addEventListener("click", closePrintView);
+$("pvPrint").addEventListener("click", () => {
+  const t = document.title;
+  document.title = UI.printTitle || t;          // nom proposé pour le PDF
+  window.print();
+  setTimeout(() => { document.title = t; }, 1500);
+});
+window.addEventListener("resize", () => { if (!$("printView").hidden) fitPreview(); });
+
+/* ---------- démarrage ---------- */
+setView("vols");
+
+/* =============================================================
+   SERVICE WORKER ET BANNIÈRE DE MISE À JOUR
+   La mise à jour se déclenche en incrémentant CACHE dans sw.js.
+   ============================================================= */
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")){
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloading = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (!hadController || reloading) return;
+    reloading = true; location.reload();
+  });
+  navigator.serviceWorker.register("sw.js").then(reg => {
+    const showIfWaiting = () => {
+      if (!reg.waiting || !navigator.serviceWorker.controller) return;
+      $("upd").classList.add("show");
+      $("updGo").onclick = () => { if (reg.waiting) reg.waiting.postMessage({type: "SKIP_WAITING"}); };
+      $("updX").onclick = () => $("upd").classList.remove("show");
+    };
+    showIfWaiting();
+    reg.addEventListener("updatefound", () => {
+      const nw = reg.installing;
+      if (nw) nw.addEventListener("statechange", () => { if (nw.state === "installed") showIfWaiting(); });
+    });
+    const check = () => reg.update().catch(() => {});
+    check();
+    setInterval(check, 30 * 60 * 1000);
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") check(); });
+  }).catch(() => {});
+}
+</script>
+</body>
+</html>

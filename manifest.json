@@ -1,0 +1,18 @@
+{
+  "id": "carnet-de-vol",
+  "name": "Carnet de vol",
+  "short_name": "Carnet de vol",
+  "description": "Carnet de vol personnel : saisie, archive et totaux des heures de vol.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1e241d",
+  "theme_color": "#1e241d",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
