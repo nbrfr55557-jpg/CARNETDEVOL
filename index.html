@@ -120,7 +120,14 @@ main{padding:4px 16px calc(var(--tabbar) + env(safe-area-inset-bottom) + 92px);m
 .opx-pace b{font-size:34px;font-weight:700;color:var(--sand);letter-spacing:-.02em}
 .opx-pace span{color:var(--muted)}
 .opx-warn{color:var(--warn)}
-table.plan td:first-child{white-space:nowrap}
+.opx-card{display:block;width:100%;text-align:left}
+.opx-card .row{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.opx-card h2{margin-bottom:0}
+.opx-card .pct{font-size:22px;font-weight:700;color:var(--sand)}
+.opx-card .pct.done{color:var(--sil)}
+.opx-card .prog{margin:10px 0 6px}
+.opx-card p{font-size:13px;color:var(--muted)}
+.opx-card:active{background:var(--bg3)}
 .objline{font-size:15px;color:var(--muted)} .objline b{color:var(--ink);font-size:20px;font-weight:650;margin-right:4px}
 .prog{height:8px;background:var(--bg3);border-radius:999px;overflow:hidden;margin:10px 0 8px}
 .prog span{display:block;height:100%;background:var(--sand)}
@@ -533,7 +540,7 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
    une clé générique).
    Durées stockées en MINUTES entières.
    ============================================================= */
-const APP_VERSION = "1.19";
+const APP_VERSION = "1.20";
 /* tout le texte saisi est enregistré en majuscules */
 const UP = v => String(v == null ? "" : v).toLocaleUpperCase("fr-FR");
 const STORE_KEY = "carnetvol.data.v1";
@@ -770,18 +777,21 @@ function opexCalc(D){
   const perWeek = Math.ceil(perDay * 7 / 6) * 6;          // arrondi au dixième d'heure supérieur
   return {today, obj, objMin, D, startW, acquired, lost, planStart, days, needed, perDay, perWeek, past: D <= today};
 }
-function opexSummary(){
-  const D = DB.settings.opexDate;
-  if (!D) return "Date de départ à renseigner";
-  const o = opexCalc(D);
-  if (o.past) return "Départ du " + frDate(D) + " dépassé";
-  if (!o.objMin) return "Départ le " + frDate(D) + " : objectif à définir dans Réglages";
-  return "Départ le " + frDate(D) + " : " + fmtDur(o.acquired) + " h acquises sur " + o.obj + " h, " +
-    (o.needed ? fmtDur(o.perWeek) + " h par semaine" : "objectif déjà atteint");
-}
 function renderOpexCard(){
-  $("totOpex").innerHTML = '<button type="button" class="card link" id="opexOpen"><span><h2>OPEX</h2><p class="num">' + esc(opexSummary()) +
-    '</p></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>';
+  const D = DB.settings.opexDate;
+  let pct = null, done = false, sub;
+  if (!D) sub = "Date de départ à renseigner";
+  else {
+    const o = opexCalc(D);
+    if (o.past) sub = "Départ du " + frDate(D) + " dépassé";
+    else if (!o.objMin) sub = "Départ le " + frDate(D) + ", objectif à définir dans Réglages";
+    else { pct = Math.min(100, o.acquired / o.objMin * 100); done = !o.needed; sub = "Départ le " + frDate(D); }
+  }
+  $("totOpex").innerHTML = '<button type="button" class="card opx-card" id="opexOpen"><span class="row"><h2>OPEX</h2>' +
+    (pct !== null ? '<span class="pct num' + (done ? " done" : "") + '">' + Math.floor(pct) + " %</span>" : "") + "</span>" +
+    (pct !== null ? '<div class="prog big' + (done ? " done" : "") + '" role="progressbar" aria-label="Heures acquises au départ" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.floor(pct) +
+      '"><span style="width:' + pct.toFixed(2) + '%"></span></div>' : "") +
+    '<p class="num">' + esc(sub) + "</p></button>";
   $("opexOpen").onclick = openOpex;
 }
 function renderOpex(){
@@ -808,22 +818,6 @@ function renderOpex(){
     '<p class="note">Reste ' + fmtDur(o.needed) + " h à voler en " + wk + " semaine" + (o.days > 7 ? "s" : "") + " (" + o.days + " jour" + (o.days > 1 ? "s" : "") + ")" +
     (o.planStart > o.today ? ", à partir du " + frDate(o.planStart) + " : les vols plus anciens ne compteront pas au départ" : "") +
     ". Cadence arrondie au dixième supérieur, recalculée à chaque vol enregistré.</p></div>";
-  /* plan semaine par semaine (lundi → dimanche), jusqu'à la veille du départ */
-  /* même cadence que celle affichée (arrondie au dixième supérieur) ; les semaines
-     incomplètes au prorata des jours ; plus rien à voler une fois l'objectif atteint */
-  const rows = [], perDayR = o.perWeek / 7;
-  let d = o.planStart, cum = o.acquired;
-  while (d < D){
-    const dow = (new Date(d + "T12:00:00").getDay() + 6) % 7;     // 0 = lundi
-    let end = isoPlus(d, 6 - dow); if (end >= D) end = isoPlus(D, -1);
-    const n = daysBetween(d, end) + 1;
-    const t = Math.max(0, Math.min(Math.ceil(perDayR * n / 6) * 6, o.objMin - cum));
-    cum += t;
-    rows.push("<tr><td>" + frDate(d).slice(0, 5) + " au " + frDate(end).slice(0, 5) + "</td><td>" + n + " j</td><td>" + (t ? fmtDur(t) : "–") + "</td><td>" + fmtDur(cum) + "</td></tr>");
-    d = isoPlus(end, 1);
-  }
-  h += '<div class="card"><h2>Plan semaine par semaine</h2><table class="bd plan num"><thead><tr><th>Semaine</th><th>Jours</th><th>À voler</th><th>Cumul au départ</th></tr></thead><tbody>' +
-    rows.join("") + '</tbody></table><p class="note">« Cumul au départ » : heures qui compteront à la date du départ si le plan est tenu.</p></div>';
   res.innerHTML = h;
 }
 function openOpex(){
