@@ -108,6 +108,19 @@ main{padding:4px 16px calc(var(--tabbar) + env(safe-area-inset-bottom) + 92px);m
 .stat i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
 .card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 16px 16px;margin-top:16px}
 .card h2{font-size:17px;font-weight:650;margin-bottom:10px}
+/* carte OPEX (bouton) et fiche OPEX */
+.card.link{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left}
+.card.link h2{margin-bottom:2px}
+.card.link p{font-size:14px;color:var(--muted)}
+.card.link svg{width:20px;height:20px;color:var(--faint);flex:none}
+.card.link:active{background:var(--bg3)}
+.opx-big{font-size:46px;font-weight:700;letter-spacing:-.025em;line-height:1}
+.opx-big small{font-size:18px;color:var(--muted);font-weight:600;letter-spacing:0;margin-left:6px}
+.opx-pace{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.opx-pace b{font-size:34px;font-weight:700;color:var(--sand);letter-spacing:-.02em}
+.opx-pace span{color:var(--muted)}
+.opx-warn{color:var(--warn)}
+table.plan td:first-child{white-space:nowrap}
 .objline{font-size:15px;color:var(--muted)} .objline b{color:var(--ink);font-size:20px;font-weight:650;margin-right:4px}
 .prog{height:8px;background:var(--bg3);border-radius:999px;overflow:hidden;margin:10px 0 8px}
 .prog span{display:block;height:100%;background:var(--sand)}
@@ -317,6 +330,7 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
   <section id="v-totaux" hidden>
     <select class="select" id="periodSel" aria-label="Période"></select>
     <div class="hero" id="totHero"></div>
+    <div id="totOpex"></div>
     <div id="totObj"></div>
     <div id="totBars"></div>
     <div id="totProcs"></div>
@@ -461,6 +475,25 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
   </div>
 </div>
 
+<div class="sheet" id="opexSheet" aria-hidden="true">
+  <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="opexTitle">
+    <div class="sheet-head">
+      <button class="linkbtn" id="opexClose" type="button">Fermer</button>
+      <h2 id="opexTitle">OPEX</h2>
+      <span></span>
+    </div>
+    <div class="sheet-body">
+      <div class="sheet-inner">
+        <div class="fgroup">
+          <div class="fld"><span class="flab">Date de départ prévue</span><input class="inp" type="date" id="opexDate"></div>
+          <p class="hint" id="opexObj"></p>
+        </div>
+        <div id="opexRes"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="chooser" id="chooser" aria-hidden="true">
   <div class="chooser-panel" role="dialog" aria-modal="true" aria-labelledby="chooserTitle">
     <h2 id="chooserTitle">Nouvelle saisie</h2>
@@ -500,7 +533,7 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
    une clé générique).
    Durées stockées en MINUTES entières.
    ============================================================= */
-const APP_VERSION = "1.18";
+const APP_VERSION = "1.19";
 /* tout le texte saisi est enregistré en majuscules */
 const UP = v => String(v == null ? "" : v).toLocaleUpperCase("fr-FR");
 const STORE_KEY = "carnetvol.data.v1";
@@ -568,6 +601,7 @@ function normSettings(s){
   LIST_KEYS.forEach(k => { o[k] = DEFAULTS[k].map(UP); });
   SEEDS.forEach(([k]) => { const v = s && s.seed && s.seed[k]; o.seed[k] = ISO_RE.test(v || "") ? v : ""; });
   o.printName = s && typeof s.printName === "string" ? UP(s.printName.trim()).slice(0, 80) : "";
+  o.opexDate = s && ISO_RE.test(s.opexDate || "") ? s.opexDate : "";
   if (s && typeof s === "object"){
     LIST_KEYS.forEach(k => {
       if (Array.isArray(s[k])){
@@ -714,6 +748,98 @@ function renderView(){
    VUE VOLS
    ============================================================= */
 /* Objectif sur 12 mois glissants : vols réels uniquement, datés de J-364 à J */
+/* =============================================================
+   OPEX : heures de vol réel des 12 mois précédant le départ et
+   cadence hebdomadaire pour atteindre l'objectif (Réglages).
+   Fenêtre au départ D : vols datés de D − 364 j à D (même règle
+   que le compteur 12 mois glissants).
+   ============================================================= */
+const dayMs = 864e5;
+const isoPlus = (iso, n) => isoDate(new Date(Date.parse(iso + "T12:00:00") + n * dayMs));
+const daysBetween = (a, b) => Math.round((Date.parse(b + "T12:00:00") - Date.parse(a + "T12:00:00")) / dayMs);
+function opexCalc(D){
+  const today = todayISO(), obj = +DB.settings.objectif12 || 0, objMin = Math.round(obj * 60);
+  const startW = isoPlus(D, -364);                        // premier jour compté au départ
+  const real = DB.flights.filter(f => !f.simu && f.date <= today);
+  const acquired = sumMin(real.filter(f => f.date >= startW && f.date <= D), "total");
+  const lost = sumMin(real.filter(f => f.date > isoPlus(today, -365) && f.date < startW), "total");  // compteur actuel qui ne comptera plus
+  const planStart = startW > today ? startW : today;      // à partir de quand un vol compte encore
+  const days = Math.max(0, daysBetween(planStart, D));    // jours de vol restants (le jour du départ exclu)
+  const needed = Math.max(0, objMin - acquired);
+  const perDay = days ? needed / days : 0;
+  const perWeek = Math.ceil(perDay * 7 / 6) * 6;          // arrondi au dixième d'heure supérieur
+  return {today, obj, objMin, D, startW, acquired, lost, planStart, days, needed, perDay, perWeek, past: D <= today};
+}
+function opexSummary(){
+  const D = DB.settings.opexDate;
+  if (!D) return "Date de départ à renseigner";
+  const o = opexCalc(D);
+  if (o.past) return "Départ du " + frDate(D) + " dépassé";
+  if (!o.objMin) return "Départ le " + frDate(D) + " : objectif à définir dans Réglages";
+  return "Départ le " + frDate(D) + " : " + fmtDur(o.acquired) + " h acquises sur " + o.obj + " h, " +
+    (o.needed ? fmtDur(o.perWeek) + " h par semaine" : "objectif déjà atteint");
+}
+function renderOpexCard(){
+  $("totOpex").innerHTML = '<button type="button" class="card link" id="opexOpen"><span><h2>OPEX</h2><p class="num">' + esc(opexSummary()) +
+    '</p></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>';
+  $("opexOpen").onclick = openOpex;
+}
+function renderOpex(){
+  const D = DB.settings.opexDate, obj = +DB.settings.objectif12 || 0;
+  $("opexObj").textContent = obj ? "Objectif : " + String(obj).replace(".", ",") + " h de vol réel sur les 12 mois précédant le départ (modifiable dans Réglages)." : "Aucun objectif défini : renseigne-le dans Réglages.";
+  const res = $("opexRes");
+  if (!D){ res.innerHTML = ""; return; }
+  const o = opexCalc(D);
+  if (o.past){ res.innerHTML = '<div class="card"><p class="note" style="margin:0">La date de départ est passée. Choisis une date à venir.</p></div>'; return; }
+  const pct = o.objMin ? Math.min(100, o.acquired / o.objMin * 100) : 0;
+  const wk = (o.days / 7).toFixed(1).replace(".", ",").replace(",0", "");
+  let h = '<div class="card"><h2>Au départ du ' + frDate(D) + "</h2>" +
+    '<div class="opx-big num">' + fmtDur(o.acquired) + "<small>sur " + String(o.obj).replace(".", ",") + " h</small></div>" +
+    '<p class="opx-sub" style="color:var(--muted);font-size:14px;margin-top:6px">heures de vol réel déjà acquises sur la période du ' + frDate(o.startW) + " au " + frDate(D) + "</p>" +
+    '<div class="prog big' + (o.needed ? "" : " done") + '"><span style="width:' + pct.toFixed(2) + '%"></span></div>' +
+    (o.lost ? '<p class="note opx-warn">Ton compteur actuel compte ' + fmtDur(o.lost) + " h de vols antérieurs au " + frDate(o.startW) + " qui ne compteront plus au départ.</p>" : "") +
+    "</div>";
+  if (!o.needed){
+    h += '<div class="card"><h2>Cadence</h2><p>Objectif déjà atteint au départ avec les vols enregistrés : aucun minimum hebdomadaire à tenir.</p></div>';
+    res.innerHTML = h; return;
+  }
+  h += '<div class="card"><h2>Cadence à tenir</h2>' +
+    '<div class="opx-pace num"><b>' + fmtDur(o.perWeek) + " h</b><span>par semaine</span></div>" +
+    '<p class="note">Reste ' + fmtDur(o.needed) + " h à voler en " + wk + " semaine" + (o.days > 7 ? "s" : "") + " (" + o.days + " jour" + (o.days > 1 ? "s" : "") + ")" +
+    (o.planStart > o.today ? ", à partir du " + frDate(o.planStart) + " : les vols plus anciens ne compteront pas au départ" : "") +
+    ". Cadence arrondie au dixième supérieur, recalculée à chaque vol enregistré.</p></div>";
+  /* plan semaine par semaine (lundi → dimanche), jusqu'à la veille du départ */
+  /* même cadence que celle affichée (arrondie au dixième supérieur) ; les semaines
+     incomplètes au prorata des jours ; plus rien à voler une fois l'objectif atteint */
+  const rows = [], perDayR = o.perWeek / 7;
+  let d = o.planStart, cum = o.acquired;
+  while (d < D){
+    const dow = (new Date(d + "T12:00:00").getDay() + 6) % 7;     // 0 = lundi
+    let end = isoPlus(d, 6 - dow); if (end >= D) end = isoPlus(D, -1);
+    const n = daysBetween(d, end) + 1;
+    const t = Math.max(0, Math.min(Math.ceil(perDayR * n / 6) * 6, o.objMin - cum));
+    cum += t;
+    rows.push("<tr><td>" + frDate(d).slice(0, 5) + " au " + frDate(end).slice(0, 5) + "</td><td>" + n + " j</td><td>" + (t ? fmtDur(t) : "–") + "</td><td>" + fmtDur(cum) + "</td></tr>");
+    d = isoPlus(end, 1);
+  }
+  h += '<div class="card"><h2>Plan semaine par semaine</h2><table class="bd plan num"><thead><tr><th>Semaine</th><th>Jours</th><th>À voler</th><th>Cumul au départ</th></tr></thead><tbody>' +
+    rows.join("") + '</tbody></table><p class="note">« Cumul au départ » : heures qui compteront à la date du départ si le plan est tenu.</p></div>';
+  res.innerHTML = h;
+}
+function openOpex(){
+  $("opexDate").value = DB.settings.opexDate || "";
+  renderOpex();
+  $("opexSheet").classList.add("open"); $("opexSheet").setAttribute("aria-hidden", "false");
+  document.body.classList.add("lock");
+  $("opexSheet").querySelector(".sheet-body").scrollTop = 0;
+}
+function closeOpex(){
+  if (document.activeElement) document.activeElement.blur();
+  $("opexSheet").classList.remove("open"); $("opexSheet").setAttribute("aria-hidden", "true");
+  document.body.classList.remove("lock");
+  renderOpexCard();
+}
+
 function goalInfo(){
   const today = todayISO(), cut12 = daysAgoISO(365), cutOut = daysAgoISO(335);
   const w = DB.flights.filter(f => !f.simu && f.date > cut12 && f.date <= today);
@@ -883,6 +1009,8 @@ function renderTotaux(){
       stat(fmtDur(a.vsv), "VSV, jour et nuit", "--vsv") +
       stat(a.proc, "Procédures en vol") +
       stat(fmtDur(a.simuT), "Simulateur, " + plural(a.simuN, "séance")) + "</div>";
+
+  renderOpexCard();
 
   /* objectif 12 mois glissants */
   const g = goalInfo();
@@ -1338,7 +1466,7 @@ $("fProcs").addEventListener("click", e => {
 /* ---------- choix vol réel / simulateur ---------- */
 function updateSheetMode(){
   const s = FS.simu, ed = !!UI.editingId;
-  document.querySelector(".sheet-panel").classList.toggle("simu", s);
+  $("sheet").querySelector(".sheet-panel").classList.toggle("simu", s);
   $("fNatureFld").hidden = s;
   F.immat.inputMode = s ? "text" : "numeric";   // pavé numérique pour un vol réel, clavier complet au simulateur (CPT TIGRE…)     // pas de nature de vol en simulateur
   $("fTirsGroup").hidden = s;     // munitions : vols réels uniquement
@@ -1358,6 +1486,11 @@ $("chooser").addEventListener("click", e => {
   if (c){ closeChooser(); openForm(null, c.dataset.simu === "1"); }
 });
 $("chooserCancel").addEventListener("click", closeChooser);
+$("opexClose").addEventListener("click", closeOpex);
+$("opexDate").addEventListener("change", () => {
+  DB.settings.opexDate = ISO_RE.test($("opexDate").value) ? $("opexDate").value : "";
+  persist(); renderOpex();
+});
 
 /* =============================================================
    IMPRESSION MENSUELLE A5

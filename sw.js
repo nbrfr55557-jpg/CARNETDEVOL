@@ -4,7 +4,7 @@
    Le préfixe évite de purger les caches des autres PWA hébergées sur le même
    domaine github.io. */
 const PREFIX = "carnet-vol-";
-const CACHE = PREFIX + "v18";
+const CACHE = PREFIX + "v19";
 const ASSETS = [
   "./",
   "./index.html",
