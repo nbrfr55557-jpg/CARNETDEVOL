@@ -474,7 +474,7 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
    une clé générique).
    Durées stockées en MINUTES entières.
    ============================================================= */
-const APP_VERSION = "1.21";
+const APP_VERSION = "1.22";
 /* tout le texte saisi est enregistré en majuscules */
 const UP = v => String(v == null ? "" : v).toLocaleUpperCase("fr-FR");
 const STORE_KEY = "carnetvol.data.v1";
@@ -656,7 +656,7 @@ async function shareOrDownload(blob, name){
   try {
     const file = new File([blob], name, {type: blob.type});
     if (navigator.canShare && navigator.canShare({files: [file]})){
-      await navigator.share({files: [file], title: name});
+      await navigator.share({files: [file]});   // fichier seul : un titre serait enregistré par iOS comme fichier texte séparé
       return true;
     }
   } catch (e){
