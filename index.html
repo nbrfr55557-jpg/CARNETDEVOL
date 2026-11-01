@@ -474,7 +474,7 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
    une clé générique).
    Durées stockées en MINUTES entières.
    ============================================================= */
-const APP_VERSION = "1.22";
+const APP_VERSION = "1.23";
 /* tout le texte saisi est enregistré en majuscules */
 const UP = v => String(v == null ? "" : v).toLocaleUpperCase("fr-FR");
 const STORE_KEY = "carnetvol.data.v1";
@@ -1539,16 +1539,10 @@ function drawFlHeader(ops, y){
   opLine(ops, x0, y, x0, y + FL_HEAD, 0.7);
   return FL_HEAD;
 }
-function tirShortPdf(f){
-  return ARMES.map(([k, l]) => {
-    const j = (f.tirs || {})[k + "J"] || 0, n = (f.tirs || {})[k + "N"] || 0;
-    return (j || n) ? l + " " + [j ? j + "J" : "", n ? n + "N" : ""].filter(Boolean).join(" ") : "";
-  }).filter(Boolean).join(", ");
-}
 /* une ligne de vol, mise en page (hauteur connue avant dessin) */
 function layFlRow(f){
   const num = (v, b) => v ? [P(fmtDec(v), b ? "B" : "R", "R")] : [];
-  const obs = [procText(f), ctrlText(f), tirShortPdf(f)].filter(Boolean).join(", ");
+  const obs = [procText(f), ctrlText(f)].filter(Boolean).join(", ");   // les munitions tirées ne figurent pas sur le relevé
   const content = {
     date: [P(f.date.slice(8, 10) + "/" + f.date.slice(5, 7))],
     app: [P(f.type)].concat(f.immat ? [P(f.immat, "B")] : []),
@@ -1614,16 +1608,11 @@ function recapBlock(ym, month, year){
     [{v: ["Simulateur (séances)", fmtDec(m.simT) + " (" + m.simN + ")", fmtDec(a.simT) + " (" + a.simN + ")"]}]));
   const pn = [...new Set(DB.settings.procedures.concat(Object.keys(a.proc), Object.keys(a.procS)))].filter(k => (a.proc[k] || 0) + (a.procS[k] || 0));
   const vs = (r, k) => (r.proc[k] || 0) + " / " + (r.procS[k] || 0);
-  const tk = TIR_KEYS.filter(k => a.tirs[k]);
   const procT = laySmallTable(xR, colW, ["Procédures vol / simu", mName, "Cumul " + y],
     pn.length ? pn.map(k => ({v: [k, vs(m, k), vs(a, k)]})) : [{v: ["Aucune procédure", "", ""], grey: 1}]);
-  const tirT = laySmallTable(xR, colW, ["Munitions tirées", mName, "Cumul " + y],
-    tk.length ? tk.map(k => ({v: [ARMES.find(x => k.startsWith(x[0]))[1] + (k.endsWith("J") ? " jour" : " nuit"), String(m.tirs[k] || 0), String(a.tirs[k])]}))
-              : [{v: ["Aucun tir", "", ""], grey: 1}]);
-  const rightH = procT.h + 7 + tirT.h;
-  return {h: CAP_H + Math.max(left.h, rightH), draw(ops, yy){
+  return {h: CAP_H + Math.max(left.h, procT.h), draw(ops, yy){
     drawCaption(ops, yy, "Récapitulatif");
-    left.draw(ops, yy + CAP_H); procT.draw(ops, yy + CAP_H); tirT.draw(ops, yy + CAP_H + procT.h + 7);
+    left.draw(ops, yy + CAP_H); procT.draw(ops, yy + CAP_H);
   }};
 }
 function notesBlock(ym, month, year){
