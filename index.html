@@ -254,62 +254,6 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
 .upd .go{font-weight:800;padding:8px 12px;border-radius:8px;background:rgba(0,0,0,.12)}
 .upd .x{font-size:22px;line-height:1;padding:6px 8px}
 
-/* ---------- aperçu et impression A5 ---------- */
-.pv{position:fixed;inset:0;z-index:35;background:#3a4038;display:flex;flex-direction:column}
-.pv-bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:calc(env(safe-area-inset-top) + 6px) 10px 6px;background:var(--bg);border-bottom:1px solid var(--line)}
-.pv-bar h2{font-size:17px;font-weight:650;text-align:center}
-.pv-scroll{flex:1;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.pv-pages{padding:16px 12px calc(env(safe-area-inset-bottom) + 28px);display:flex;flex-direction:column;align-items:center;gap:16px}
-/* l'aperçu est réduit par transform : la mise en page reste exactement celle qui a été mesurée et qui sera imprimée */
-.pv-pages{--s:1}
-.pvp{flex:none;width:calc(148mm * var(--s));height:calc(210mm * var(--s));overflow:hidden;background:#fff;box-shadow:0 4px 18px rgba(0,0,0,.45)}
-.pvp > .a5{transform:scale(var(--s));transform-origin:0 0}
-#pvMeasure{position:absolute;left:-10000px;top:0;visibility:hidden}
-.a5{width:148mm;height:210mm;padding:7mm 7mm 5mm;background:#fff;color:#111;display:flex;flex-direction:column;overflow:hidden;
-  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:5.3pt;line-height:1.2;text-align:left;
-  -webkit-print-color-adjust:exact;print-color-adjust:exact}
-.a5 *{box-sizing:border-box}
-.a5-head{flex:none;display:flex;justify-content:space-between;align-items:flex-end;gap:4mm;border-bottom:1.5px solid #111;padding-bottom:2mm;margin-bottom:3mm}
-.a5-head .k{font-size:6pt;color:#555;margin-bottom:.8mm}
-.a5-head h1{font-size:14pt;font-weight:700;letter-spacing:-.01em;line-height:1}
-.a5-head .r{text-align:right;color:#333}
-.a5-head.sm{align-items:baseline;font-size:8pt;padding-bottom:1.2mm;margin-bottom:2.5mm}
-.a5c{flex:1 1 auto;min-height:0;overflow:hidden}
-.a5-foot{flex:none;display:flex;justify-content:space-between;font-size:5.8pt;color:#777;border-top:1px solid #bbb;padding-top:1mm;margin-top:1.5mm}
-.a5 .blk + .blk{margin-top:3.5mm}
-.a5 .cap{font-size:7pt;font-weight:700;margin-bottom:1.2mm}
-/* modèle « separate » + traits de 1 px : les filets fins et le modèle « collapse » disparaissent à l'impression iOS */
-.a5 table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;border-top:1px solid #666;border-left:1px solid #666}
-.a5 th{font-size:4.5pt;font-weight:600;color:#222;background:#e6e6e6;border:0;border-right:1px solid #666;border-bottom:1px solid #666;padding:.8mm .6mm;text-align:center;line-height:1.1;vertical-align:middle}
-.a5 td{border:0;border-right:1px solid #8c8c8c;border-bottom:1px solid #8c8c8c;-webkit-hyphens:auto;hyphens:auto;padding:.8mm .7mm;vertical-align:top;overflow-wrap:anywhere}
-.a5 td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.a5 td.b{font-weight:700}
-.a5 td.fct{overflow-wrap:normal;word-break:normal;-webkit-hyphens:manual;hyphens:manual}
-.a5 tr.sim td{background:#eaf0f8}
-.a5 tr.tot td{font-weight:700;background:#f0f0f0;border-top:1.5px solid #111}
-.a5 .recap{display:grid;grid-template-columns:1fr 1fr;gap:3mm;align-items:start}
-.a5 table.rc + table.rc{margin-top:2.5mm}
-.a5 table.rc th:first-child,.a5 table.rc td:first-child{text-align:left}
-.a5 table.rc th:not(:first-child){width:16mm}
-.a5 small{font-size:.82em;color:#555}
-.a5 .mute{color:#777}
-.a5 .notes p{margin:.7mm 0}
-.a5 .cert{font-size:7.5pt;font-weight:700;font-style:italic;text-align:center;margin-bottom:2mm}
-.a5 .sig{display:grid;grid-template-columns:1fr 1fr;gap:4mm}
-.a5 .sig div{height:24mm;border:1px solid #555;border-radius:1mm;padding:1.2mm 1.6mm;font-size:6.5pt;color:#333}
-@page{size:A5 portrait;margin:0}
-@media print{
-  html,body{background:#fff!important;min-height:0!important;overflow:visible!important;height:auto!important}
-  body > *:not(#printView){display:none!important}
-  #printView{position:static!important;display:block!important;background:#fff!important}
-  .pv-bar{display:none!important}
-  .pv-scroll{overflow:visible!important}
-  .pv-pages{padding:0!important;display:block!important}
-  .pvp{width:auto!important;height:auto!important;overflow:visible!important;box-shadow:none!important;margin:0!important;break-after:page;page-break-after:always;break-inside:avoid;page-break-inside:avoid}
-  .pvp:last-child{break-after:auto;page-break-after:auto}
-  .pvp > .a5{transform:none!important;margin:0!important}
-}
-
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
 </style>
 </head>
@@ -349,11 +293,11 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
   <!-- ===== RÉGLAGES ===== -->
   <section id="v-reglages" hidden>
     <div class="card" style="margin-top:4px">
-      <h2>Impression mensuelle A5</h2>
-      <label class="field"><span>Mois à imprimer</span><select class="select" id="prMonth"></select></label>
+      <h2>Relevé mensuel PDF</h2>
+      <label class="field"><span>Mois</span><select class="select" id="prMonth"></select></label>
       <label class="field"><span>Nom en tête de page (facultatif)</span><input class="inp up" id="prName" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"></label>
-      <button class="btn primary" id="prGo" type="button">Aperçu avant impression</button>
-      <p class="note">Vols et séances simulateur du mois, récapitulatif du mois et cumul de l'année. Format A5 (148 × 210 mm) : sur une imprimante chargée en A4, chaque page s'imprime en haut de la feuille, il suffit de découper.</p>
+      <button class="btn primary" id="prGo" type="button">Exporter le PDF</button>
+      <p class="note">Une feuille A4 paysage portant deux pages A5 côte à côte : à gauche les vols et séances simulateur du mois, à droite le récapitulatif, les contrôles et les signatures. Imprimer en A4 paysage à 100 % (taille réelle), couper au trait pointillé et coller sur une double page du carnet. Un mois très chargé ajoute une seconde feuille.</p>
     </div>
 
     <div class="card">
@@ -516,16 +460,6 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
   </div>
 </div>
 
-<div class="pv" id="printView" hidden>
-  <div class="pv-bar">
-    <button class="linkbtn" id="pvClose" type="button">Fermer</button>
-    <h2 id="pvTitle"></h2>
-    <button class="linkbtn strong" id="pvPrint" type="button">Imprimer</button>
-  </div>
-  <div class="pv-scroll"><div class="pv-pages" id="pvPages"></div></div>
-</div>
-<div id="pvMeasure" aria-hidden="true"></div>
-
 <datalist id="dlImmat"></datalist>
 <datalist id="dlMission"></datalist>
 <datalist id="dlEquip"></datalist>
@@ -540,7 +474,7 @@ input[type="date"].inp::-webkit-date-and-time-value{text-align:left}
    une clé générique).
    Durées stockées en MINUTES entières.
    ============================================================= */
-const APP_VERSION = "1.20";
+const APP_VERSION = "1.21";
 /* tout le texte saisi est enregistré en majuscules */
 const UP = v => String(v == null ? "" : v).toLocaleUpperCase("fr-FR");
 const STORE_KEY = "carnetvol.data.v1";
@@ -1487,38 +1421,352 @@ $("opexDate").addEventListener("change", () => {
 });
 
 /* =============================================================
-   IMPRESSION MENSUELLE A5
-   Les pages sont composées hors écran (#pvMeasure) en millimètres,
-   remplies ligne par ligne jusqu'au bas de page, puis affichées en
-   aperçu et imprimées (@page A5).
+   RELEVÉ MENSUEL PDF
+   PDF vectoriel construit directement par l'app, sans bibliothèque :
+   une feuille A4 paysage = deux pages A5 côte à côte, à couper au
+   trait pointillé. Police Helvetica standard mesurée avec ses
+   métriques exactes : le rendu est identique sur tous les appareils.
+   Coordonnées en points (1/72 pouce), origine en haut à gauche de
+   chaque page A5 ; converties au moment d'écrire le PDF.
    ============================================================= */
-const PR_COLS = [8.5, 16, 10, 26.5, 7, 10.5, 7, 6.5, 6.5, 6.5, 8, 21];   // mm, total 134 = 148 − 2 × 7
-const PR_HEAD = "<colgroup>" + PR_COLS.map(w => '<col style="width:' + w + 'mm">').join("") + "</colgroup>" +
-  '<thead><tr><th rowspan="2">Date</th><th rowspan="2">Appareil</th><th rowspan="2">Fct</th><th rowspan="2">Mission, nature, équipage</th>' +
-  '<th colspan="2">Jour</th><th colspan="3">Nuit</th><th rowspan="2">VSV</th><th rowspan="2">Total</th><th rowspan="2">Observations</th></tr>' +
-  "<tr><th>h</th><th>dont VOLTAC</th><th>h</th><th>dont SIL</th><th>dont VTN</th></tr></thead>";
-function ymLabel(ym){ const [y, m] = ym.split("-").map(Number); return cap(new Date(y, m - 1, 1).toLocaleDateString("fr-FR", {month: "long", year: "numeric"})); }
-function ymEnd(ym){ const [y, m] = ym.split("-").map(Number); return isoDate(new Date(y, m, 0)); }
-const dz = m => m ? fmtDec(m) : "";
-function tirShort(f){
+const HW_R = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584,350,556,350,222,556,333,1000,556,556,333,1000,667,333,1000,350,611,350,350,222,222,333,333,350,556,1000,333,1000,500,333,944,350,500,667,278,333,556,556,556,556,260,556,333,737,370,556,584,333,737,333,400,584,333,333,333,556,537,278,333,333,365,556,834,834,834,611,667,667,667,667,667,667,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,500,556,556,556,556,278,278,278,278,556,556,556,556,556,556,556,584,611,556,556,556,556,500,556,500];
+const HW_B = [278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584,350,556,350,278,556,500,1000,556,556,333,1000,667,333,1000,350,611,350,350,278,278,500,500,350,556,1000,333,1000,556,333,944,350,500,667,278,333,556,556,556,556,280,556,333,737,370,556,584,333,737,333,400,584,333,333,333,611,556,278,333,333,365,556,834,834,834,611,722,722,722,722,722,722,1000,722,667,667,667,667,278,278,278,278,722,722,778,778,778,778,778,584,778,722,722,722,722,667,667,611,556,556,556,556,556,556,889,556,556,556,556,556,278,278,278,278,611,611,611,611,611,611,611,584,611,611,611,611,611,556,611,556];
+const WIN = {0x20AC: 128, 0x201A: 130, 0x0192: 131, 0x201E: 132, 0x2026: 133, 0x2020: 134, 0x2021: 135, 0x02C6: 136, 0x2030: 137, 0x0160: 138,
+  0x2039: 139, 0x0152: 140, 0x017D: 142, 0x2018: 145, 0x2019: 146, 0x201C: 147, 0x201D: 148, 0x2022: 149, 0x2013: 150, 0x2014: 151,
+  0x02DC: 152, 0x2122: 153, 0x0161: 154, 0x203A: 155, 0x0153: 156, 0x017E: 158, 0x0178: 159, 0x202F: 32, 0x2009: 32, 0x2007: 32, 0x2002: 32, 0x2003: 32};
+const winCode = cp => (cp >= 32 && cp < 127) || (cp >= 160 && cp <= 255) ? cp : (WIN[cp] || 63);
+function tw(s, f, size){
+  const a = f === "B" || f === "BI" ? HW_B : HW_R;
+  let w = 0;
+  for (const ch of String(s)) w += a[winCode(ch.codePointAt(0)) - 32] || 556;
+  return w * size / 1000;
+}
+function pdfStr(s){
+  let o = "(";
+  for (const ch of String(s)){
+    const c = winCode(ch.codePointAt(0));
+    o += c === 40 || c === 41 || c === 92 ? "\\" + String.fromCharCode(c) : c > 126 ? "\\" + c.toString(8) : String.fromCharCode(c);
+  }
+  return o + ")";
+}
+const PG = {W: 841.89, H: 595.28}, A5W = PG.W / 2;
+const MG = {l: 24, r: 24, t: 24, b: 22};
+const CWID = A5W - MG.l - MG.r;                      // ≈ 373 pt utiles par page A5
+const Y_MAX = PG.H - MG.b - 15;                      // bas de la zone de contenu
+const C_TXT = [0.07, 0.07, 0.07], C_GREY = [0.38, 0.38, 0.38], C_GRID = [0.42, 0.42, 0.42],
+      C_HEAD = [0.87, 0.87, 0.87], C_SIM = [0.9, 0.93, 0.98], C_TOT = [0.92, 0.92, 0.92];
+const PADX = 1.8, PADY = 2.2, GAP = 10;
+
+/* découpe un paragraphe (segments {t, f}) en lignes d'au plus w points */
+function wrapRuns(runs, size, w){
+  const words = [];
+  runs.forEach(r => String(r.t == null ? "" : r.t).split(/\s+/).filter(Boolean).forEach(t => words.push({t, f: r.f || "R"})));
+  const lines = []; let cur = [], cw = 0;
+  const push = () => { if (cur.length){ lines.push({items: cur, w: cw}); cur = []; cw = 0; } };
+  words.forEach(wd => {
+    let t = wd.t;
+    while (tw(t, wd.f, size) > w && t.length > 1){                 // mot plus large que la colonne : coupé
+      push();
+      let n = t.length - 1;
+      while (n > 1 && tw(t.slice(0, n), wd.f, size) > w) n--;
+      lines.push({items: [{t: t.slice(0, n), f: wd.f, x: 0}], w: tw(t.slice(0, n), wd.f, size)});
+      t = t.slice(n);
+    }
+    const ww = tw(t, wd.f, size), sp = tw(" ", wd.f, size);
+    if (cur.length && cw + sp + ww > w + 0.01) push();
+    const x = cur.length ? cw + sp : 0, last = cur[cur.length - 1];
+    if (last && last.f === wd.f) last.t += " " + t; else cur.push({t, f: wd.f, x});
+    cw = x + ww;
+  });
+  push();
+  return lines;
+}
+/* case : paragraphes [{runs, al, grey}] ; la police est réduite si un mot ne tient pas dans la largeur */
+function layCell(paras, size, w, minSize){
+  let widest = 0;
+  paras.forEach(p => p.runs.forEach(r => String(r.t == null ? "" : r.t).split(/\s+/).forEach(t => { if (t) widest = Math.max(widest, tw(t, r.f || "R", 1)); })));
+  const s = widest * size > w ? Math.max(minSize || 3.8, (w - 0.2) / widest) : size;
+  const lines = [];
+  paras.forEach(p => wrapRuns(p.runs, s, w).forEach(l => lines.push(Object.assign(l, {al: p.al || "L", grey: !!p.grey}))));
+  const lh = s * 1.17;
+  return {s, lines, lh, h: lines.length ? (lines.length - 1) * lh + s : 0};
+}
+const P = (t, f, al, grey) => ({runs: [{t, f}], al, grey});
+function drawCell(ops, cell, x, y, w, color){
+  cell.lines.forEach((l, i) => {
+    const bx = l.al === "R" ? x + w - l.w : l.al === "C" ? x + (w - l.w) / 2 : x;
+    const by = y + cell.s * 0.8 + i * cell.lh;
+    l.items.forEach(it => ops.push({k: "t", x: bx + it.x, y: by, t: it.t, f: it.f, s: cell.s, c: l.grey ? C_GREY : (color || C_TXT)}));
+  });
+}
+const opLine = (ops, x1, y1, x2, y2, lw, c, d) => ops.push({k: "l", x1, y1, x2, y2, lw: lw || 0.5, c: c || C_GRID, d});
+const opRect = (ops, x, y, w, h, c) => ops.push({k: "r", x, y, w, h, c});
+
+/* ---------- tableau des vols ---------- */
+const FL_COLS = [
+  {k: "date", w: 21, h: "Date"}, {k: "app", w: 39, h: "Appareil"}, {k: "fct", w: 21, h: "Fct"},
+  {k: "mis", w: 66, h: "Mission, nature"}, {k: "eq", w: 42, h: "Équipage"},
+  {k: "jour", w: 16, h: "h", g: 0, n: 1}, {k: "voltac", w: 23, h: "dont VOLTAC", g: 0, n: 1},
+  {k: "nuit", w: 16, h: "h", g: 1, n: 1}, {k: "sil", w: 16, h: "dont SIL", g: 1, n: 1}, {k: "vtn", w: 16, h: "dont VTN", g: 1, n: 1},
+  {k: "vsv", w: 16, h: "VSV", n: 1}, {k: "total", w: 18, h: "Total", n: 1}, {k: "obs", w: 0, h: "Observations"}
+];
+const FL_GROUPS = ["Jour", "Nuit"];
+(() => {
+  FL_COLS[FL_COLS.length - 1].w = CWID - FL_COLS.reduce((s, c) => s + c.w, 0);
+  let x = MG.l; FL_COLS.forEach(c => { c.x = x; x += c.w; });
+})();
+const FL_H1 = 9, FL_H2 = 14, FL_HEAD = FL_H1 + FL_H2, CAP_H = 12, FL_FS = 6.5;
+function drawCaption(ops, y, text){ ops.push({k: "t", x: MG.l, y: y + 8, t: text, f: "B", s: 8, c: C_TXT}); return CAP_H; }
+function drawFlHeader(ops, y){
+  const x0 = MG.l, x1 = MG.l + CWID;
+  opRect(ops, x0, y, CWID, FL_HEAD, C_HEAD);
+  const lab = (text, x, w, yy, h) => {
+    const c = layCell([P(text, "B", "C")], 5.2, w - 2 * 1.4, 3.6);
+    drawCell(ops, c, x + 1.4, yy + (h - c.h) / 2, w - 2 * 1.4);
+  };
+  FL_GROUPS.forEach((g, gi) => {
+    const cs = FL_COLS.filter(c => c.g === gi), gx = cs[0].x, gw = cs.reduce((s, c) => s + c.w, 0);
+    lab(g, gx, gw, y, FL_H1);
+    opLine(ops, gx, y + FL_H1, gx + gw, y + FL_H1);
+  });
+  FL_COLS.forEach(c => c.g === undefined ? lab(c.h, c.x, c.w, y, FL_HEAD) : lab(c.h, c.x, c.w, y + FL_H1, FL_H2));
+  opLine(ops, x0, y, x1, y, 0.7);
+  opLine(ops, x0, y + FL_HEAD, x1, y + FL_HEAD, 0.9, C_TXT);
+  FL_COLS.forEach((c, i) => {
+    const nx = FL_COLS[i + 1], same = nx && c.g !== undefined && c.g === nx.g;
+    opLine(ops, c.x + c.w, same ? y + FL_H1 : y, c.x + c.w, y + FL_HEAD, i === FL_COLS.length - 1 ? 0.7 : 0.5);
+  });
+  opLine(ops, x0, y, x0, y + FL_HEAD, 0.7);
+  return FL_HEAD;
+}
+function tirShortPdf(f){
   return ARMES.map(([k, l]) => {
     const j = (f.tirs || {})[k + "J"] || 0, n = (f.tirs || {})[k + "N"] || 0;
     return (j || n) ? l + " " + [j ? j + "J" : "", n ? n + "N" : ""].filter(Boolean).join(" ") : "";
   }).filter(Boolean).join(", ");
 }
-function prRow(f){
-  const l2 = [f.nature, f.equipier ? "avec " + f.equipier : ""].filter(Boolean).join(", ");
-  const obs = [procText(f), ctrlText(f), tirShort(f)].filter(Boolean).map(esc).join(", ");
-  return "<tr" + (f.simu ? ' class="sim"' : "") + "><td>" + f.date.slice(8, 10) + "/" + f.date.slice(5, 7) + "</td>" +
-    "<td>" + esc(f.type) + (f.immat ? "<br><b>" + esc(f.immat) + "</b>" : "") + "</td><td class=\"fct\">" + esc(f.fonction) + "</td>" +
-    "<td>" + (f.mission ? "<b>" + esc(f.mission) + "</b>" + (l2 ? "<br>" : "") : "") + esc(l2) + "</td>" +
-    ["jour", "voltac", "nuit", "sil", "vtn", "vsv"].map(k => '<td class="n">' + dz(f[k]) + "</td>").join("") +
-    '<td class="n b">' + fmtDec(f.total) + "</td><td>" + obs + (f.rem ? (obs ? "<br>" : "") + "<i>" + esc(f.rem) + "</i>" : "") + "</td></tr>";
+/* une ligne de vol, mise en page (hauteur connue avant dessin) */
+function layFlRow(f){
+  const num = (v, b) => v ? [P(fmtDec(v), b ? "B" : "R", "R")] : [];
+  const obs = [procText(f), ctrlText(f), tirShortPdf(f)].filter(Boolean).join(", ");
+  const content = {
+    date: [P(f.date.slice(8, 10) + "/" + f.date.slice(5, 7))],
+    app: [P(f.type)].concat(f.immat ? [P(f.immat, "B")] : []),
+    fct: [P(f.fonction)],
+    mis: (f.mission ? [P(f.mission, "B")] : []).concat(!f.simu && f.nature ? [P(f.nature)] : []),
+    eq: [P(f.equipier)],
+    jour: num(f.jour), voltac: num(f.voltac), nuit: num(f.nuit), sil: num(f.sil), vtn: num(f.vtn), vsv: num(f.vsv),
+    total: num(f.total, true),
+    obs: (obs ? [P(obs)] : []).concat(f.rem ? [P(f.rem, "I")] : [])
+  };
+  const cells = FL_COLS.map(c => ({x: c.x, w: c.w, cell: layCell(content[c.k], FL_FS, c.w - 2 * PADX, 3.8)}));
+  return {cells, fill: f.simu ? C_SIM : null, h: Math.max(...cells.map(c => c.cell.h)) + 2 * PADY};
 }
-function prTotal(label, list){
-  return '<tr class="tot"><td colspan="4">' + label + "</td>" +
-    ["jour", "voltac", "nuit", "sil", "vtn", "vsv", "total"].map(k => '<td class="n">' + fmtDec(sumMin(list, k)) + "</td>").join("") + "<td></td></tr>";
+function layFlTotal(label, list){
+  const span = FL_COLS.filter(c => !c.n && c.k !== "obs"), sw = span.reduce((s, c) => s + c.w, 0);
+  const cells = [{x: MG.l, w: sw, cell: layCell([P(label, "B")], FL_FS, sw - 2 * PADX)}]
+    .concat(FL_COLS.filter(c => c.n).map(c => ({x: c.x, w: c.w, cell: layCell([P(fmtDec(sumMin(list, c.k)), "B", "R")], FL_FS, c.w - 2 * PADX, 3.8)})))
+    .concat([{x: FL_COLS[FL_COLS.length - 1].x, w: FL_COLS[FL_COLS.length - 1].w, cell: layCell([], FL_FS, 10)}]);
+  return {cells, fill: C_TOT, total: true, h: Math.max(...cells.map(c => c.cell.h)) + 2 * PADY};
 }
+function drawFlRow(ops, r, y){
+  if (r.fill) opRect(ops, MG.l, y, CWID, r.h, r.fill);
+  r.cells.forEach(c => drawCell(ops, c.cell, c.x + PADX, y + PADY, c.w - 2 * PADX));
+  if (r.total) opLine(ops, MG.l, y, MG.l + CWID, y, 1, C_TXT);
+  opLine(ops, MG.l, y + r.h, MG.l + CWID, y + r.h);
+  opLine(ops, MG.l, y, MG.l, y + r.h, 0.7);
+  r.cells.forEach((c, i) => opLine(ops, c.x + c.w, y, c.x + c.w, y + r.h, i === r.cells.length - 1 ? 0.7 : 0.5));
+}
+
+/* ---------- petits tableaux du récapitulatif ---------- */
+function laySmallTable(x, w, head, rows){
+  const ws = [w - 88, 44, 44], RS = 7, RH = 10.5;
+  const xs = [x, x + ws[0], x + ws[0] + ws[1]];
+  const mk = (vals, bold) => vals.map((v, i) => layCell([P(v, bold || (Array.isArray(v) ? false : false) ? "B" : "R", i ? "R" : "L")], RS, ws[i] - 2 * PADX, 4));
+  const hc = head.map((v, i) => layCell([P(v, "B", i ? "C" : "L")], 6, ws[i] - 2 * PADX, 4));
+  const rc = rows.map(r => r.v.map((v, i) => layCell([P(v, r.b ? "B" : "R", i ? "R" : "L", r.grey)], RS, ws[i] - 2 * PADX, 4)));
+  return {h: RH * (rows.length + 1), draw(ops, y){
+    opRect(ops, x, y, w, RH, C_HEAD);
+    const row = (cs, yy) => cs.forEach((c, i) => drawCell(ops, c, xs[i] + PADX, yy + (RH - c.h) / 2, ws[i] - 2 * PADX));
+    row(hc, y);
+    rc.forEach((cs, j) => row(cs, y + RH * (j + 1)));
+    const H = RH * (rows.length + 1);
+    for (let j = 0; j <= rows.length + 1; j++) opLine(ops, x, y + j * RH, x + w, y + j * RH, j === 0 || j === rows.length + 1 ? 0.7 : (j === 1 ? 0.8 : 0.5), j === 1 ? C_TXT : C_GRID);
+    [x, xs[1], xs[2], x + w].forEach((vx, i) => opLine(ops, vx, y, vx, y + H, i === 0 || i === 3 ? 0.7 : 0.5));
+  }};
+}
+function recapBlock(ym, month, year){
+  const y = ym.slice(0, 4), m = aggPrint(month), a = aggPrint(year);
+  const mName = cap(new Date(+y, +ym.slice(5, 7) - 1, 1).toLocaleDateString("fr-FR", {month: "long"}));
+  const pct = (v, t) => t ? " (" + Math.round(v / t * 100) + " %)" : "";
+  const types = Object.keys(a.types).sort((p, q) => a.types[q] - a.types[p]);
+  const colW = (CWID - 10) / 2, xL = MG.l, xR = MG.l + colW + 10;
+  const left = laySmallTable(xL, colW, ["Heures de vol", mName, "Cumul " + y], [
+    {v: ["Vols", String(m.n), String(a.n)]},
+    {v: ["Total", fmtDec(m.total), fmtDec(a.total)], b: 1},
+    {v: ["Jour", fmtDec(m.jour) + pct(m.jour, m.total), fmtDec(a.jour) + pct(a.jour, a.total)]},
+    {v: ["dont VOLTAC", fmtDec(m.voltac), fmtDec(a.voltac)]},
+    {v: ["Nuit", fmtDec(m.nuit) + pct(m.nuit, m.total), fmtDec(a.nuit) + pct(a.nuit, a.total)]},
+    {v: ["dont SIL", fmtDec(m.sil), fmtDec(a.sil)]},
+    {v: ["dont VTN", fmtDec(m.vtn), fmtDec(a.vtn)]},
+    {v: ["VSV", fmtDec(m.vsv), fmtDec(a.vsv)]}
+  ].concat(types.map(t => ({v: [t, fmtDec(m.types[t] || 0), fmtDec(a.types[t])]})),
+    [{v: ["Simulateur (séances)", fmtDec(m.simT) + " (" + m.simN + ")", fmtDec(a.simT) + " (" + a.simN + ")"]}]));
+  const pn = [...new Set(DB.settings.procedures.concat(Object.keys(a.proc), Object.keys(a.procS)))].filter(k => (a.proc[k] || 0) + (a.procS[k] || 0));
+  const vs = (r, k) => (r.proc[k] || 0) + " / " + (r.procS[k] || 0);
+  const tk = TIR_KEYS.filter(k => a.tirs[k]);
+  const procT = laySmallTable(xR, colW, ["Procédures vol / simu", mName, "Cumul " + y],
+    pn.length ? pn.map(k => ({v: [k, vs(m, k), vs(a, k)]})) : [{v: ["Aucune procédure", "", ""], grey: 1}]);
+  const tirT = laySmallTable(xR, colW, ["Munitions tirées", mName, "Cumul " + y],
+    tk.length ? tk.map(k => ({v: [ARMES.find(x => k.startsWith(x[0]))[1] + (k.endsWith("J") ? " jour" : " nuit"), String(m.tirs[k] || 0), String(a.tirs[k])]}))
+              : [{v: ["Aucun tir", "", ""], grey: 1}]);
+  const rightH = procT.h + 7 + tirT.h;
+  return {h: CAP_H + Math.max(left.h, rightH), draw(ops, yy){
+    drawCaption(ops, yy, "Récapitulatif");
+    left.draw(ops, yy + CAP_H); procT.draw(ops, yy + CAP_H); tirT.draw(ops, yy + CAP_H + procT.h + 7);
+  }};
+}
+function notesBlock(ym, month, year){
+  const end = ymEnd(ym), y = ym.slice(0, 4);
+  const labelOf = f => [ctrlText(f).replace(/\bPU\b/, f.simu ? "PU simulateur" : "PU en vol")].concat(f.simu && (f.tests || []).length ? ["(simulateur)"] : []).join(" ");
+  const mItems = month.filter(f => (f.tests || []).length || f.pu).map(f => frDate(f.date).slice(0, 5) + " " + labelOf(f));
+  const lastIn = pred => year.slice().sort((p, q) => q.date.localeCompare(p.date)).find(pred);
+  const yItems = TESTS.map(([k, l]) => [l, lastIn(f => !f.simu && (f.tests || []).includes(k))])
+    .concat([["PU en vol", lastIn(f => !f.simu && f.pu)], ["PU simulateur", lastIn(f => f.simu && f.pu)]])
+    .filter(x => x[1]).map(([l, f]) => l + " " + frDate(f.date).slice(0, 5));
+  const cut = isoDate(new Date(Date.parse(end + "T12:00:00") - 365 * 864e5));
+  const h12 = sumMin(DB.flights.filter(f => !f.simu && f.date > cut && f.date <= end), "total");
+  const obj = +DB.settings.objectif12 || 0;
+  const paras = [
+    [{t: "Contrôles du mois :", f: "B"}, {t: (mItems.length ? mItems.join(", ") : "aucun") + "."}],
+    [{t: "Derniers contrôles en " + y + " :", f: "B"}, {t: (yItems.length ? yItems.join(", ") : "aucun") + "."}],
+    [{t: "12 mois glissants au " + frDate(end) + " :", f: "B"}, {t: fmtDec(h12) + " h de vol réel" + (obj ? " sur un objectif de " + String(obj).replace(".", ",") + " h" : "") + "."}]
+  ].map(runs => layCell([{runs}], 7, CWID, 7));
+  const h = paras.reduce((s, c) => s + c.h, 0) + 3 * (paras.length - 1);
+  return {h, draw(ops, yy){ paras.forEach(c => { drawCell(ops, c, MG.l, yy, CWID); yy += c.h + 3; }); }};
+}
+function signBlock(){
+  const bw = (CWID - 12) / 2, bh = 80;
+  return {h: 14 + bh, draw(ops, y){
+    const c = layCell([P("Certifié exact et conforme au registre des services aériens", "BI", "C")], 8.5, CWID);
+    drawCell(ops, c, MG.l, y, CWID);
+    [["Signature du commandant d'unité", MG.l], ["Signature de l'intéressé", MG.l + bw + 12]].forEach(([t, x]) => {
+      const yb = y + 14;
+      opLine(ops, x, yb, x + bw, yb, 0.7, [0.3, 0.3, 0.3]); opLine(ops, x, yb + bh, x + bw, yb + bh, 0.7, [0.3, 0.3, 0.3]);
+      opLine(ops, x, yb, x, yb + bh, 0.7, [0.3, 0.3, 0.3]); opLine(ops, x + bw, yb, x + bw, yb + bh, 0.7, [0.3, 0.3, 0.3]);
+      ops.push({k: "t", x: x + 4, y: yb + 9, t, f: "R", s: 6.5, c: C_GREY});
+    });
+  }};
+}
+
+/* texte sur une seule ligne, aligné à droite sur xr, réduit pour tenir dans maxW */
+function oneLine(ops, t, f, size, xr, y, maxW, c){
+  const s = Math.min(size, maxW / Math.max(1, tw(t, f, 1)));
+  ops.push({k: "t", x: xr - tw(t, f, s), y, t, f, s, c});
+}
+/* ---------- composition des pages A5 ---------- */
+function buildReleve(ym){
+  const byDate = (p, q) => p.date.localeCompare(q.date) || (p.createdAt || "").localeCompare(q.createdAt || "");
+  const month = DB.flights.filter(f => f.date.startsWith(ym)).sort(byDate);
+  const vols = month.filter(f => !f.simu), sims = month.filter(f => f.simu);
+  const end = ymEnd(ym), year = DB.flights.filter(f => f.date.startsWith(ym.slice(0, 4)) && f.date <= end);
+  const name = DB.settings.printName || "", pages = [];
+  let ops = null, y = 0, top = 0;
+  const newPage = () => {
+    ops = []; pages.push(ops);
+    if (pages.length === 1){
+      ops.push({k: "t", x: MG.l, y: MG.t + 6, t: "Relevé d'activité aéronautique", f: "R", s: 6.5, c: C_GREY});
+      ops.push({k: "t", x: MG.l, y: MG.t + 22, t: ymLabel(ym), f: "B", s: 15, c: C_TXT});
+      const room = CWID - tw(ymLabel(ym), "B", 15) - 16;
+      if (name) oneLine(ops, name, "B", 7, MG.l + CWID, MG.t + 13, room, C_TXT);
+      oneLine(ops, "Édité le " + frDate(todayISO()), "R", 6.5, MG.l + CWID, MG.t + 22, room, C_GREY);
+      opLine(ops, MG.l, MG.t + 28, MG.l + CWID, MG.t + 28, 1.2, C_TXT);
+      y = MG.t + 37;
+    } else {
+      ops.push({k: "t", x: MG.l, y: MG.t + 8, t: ymLabel(ym) + ", suite", f: "B", s: 8.5, c: C_TXT});
+      if (name) oneLine(ops, name, "R", 7, MG.l + CWID, MG.t + 8, CWID - tw(ymLabel(ym) + ", suite", "B", 8.5) - 16, C_TXT);
+      opLine(ops, MG.l, MG.t + 12, MG.l + CWID, MG.t + 12, 0.9, C_TXT);
+      y = MG.t + 21;
+    }
+    top = y;
+  };
+  newPage();
+  const section = (list, label, totLabel) => {
+    if (!list.length) return;
+    const rows = list.map(layFlRow).concat([layFlTotal(totLabel, list)]);
+    let head = true, printed = false;
+    rows.forEach(r => {
+      if (y + (head ? CAP_H + FL_HEAD : 0) + r.h > Y_MAX && y > top){ newPage(); head = true; }
+      if (head){ y += drawCaption(ops, y, label + (printed ? ", suite" : "")); y += drawFlHeader(ops, y); head = false; }
+      drawFlRow(ops, r, y); y += r.h; printed = true;
+    });
+    y += GAP;
+  };
+  section(vols, "Vols", "Total des vols du mois");
+  section(sims, "Séances simulateur", "Total simulateur du mois");
+  if (!month.length){ ops.push({k: "t", x: MG.l, y: y + 8, t: "Aucun vol ni séance simulateur ce mois-ci.", f: "I", s: 7, c: C_GREY}); y += 14; }
+  if (pages.length === 1) newPage();          // récapitulatif, contrôles et signatures sur la page de droite
+  [recapBlock(ym, month, year), notesBlock(ym, month, year), signBlock()].forEach(b => {
+    if (y + b.h > Y_MAX && y > top) newPage();
+    b.draw(ops, y); y += b.h + GAP + 4;
+  });
+  pages.forEach((p, i) => {
+    opLine(p, MG.l, PG.H - MG.b - 8, MG.l + CWID, PG.H - MG.b - 8, 0.4, [0.7, 0.7, 0.7]);
+    p.push({k: "t", x: MG.l, y: PG.H - MG.b, t: "Carnet de vol", f: "R", s: 5.8, c: C_GREY});
+    const t = "Page " + (i + 1) + " / " + pages.length;
+    p.push({k: "t", x: MG.l + CWID - tw(t, "R", 5.8), y: PG.H - MG.b, t, f: "R", s: 5.8, c: C_GREY});
+  });
+  return pages;
+}
+
+/* ---------- écriture du fichier PDF ---------- */
+function pdfBytes(pages, title){
+  const n = v => String(Math.round(v * 100) / 100);
+  const col = c => c.map(n).join(" ");
+  const FN = {R: "F1", B: "F2", I: "F3", BI: "F4"};
+  const sheets = [];
+  for (let i = 0; i < pages.length; i += 2){
+    let s = "";
+    [pages[i], pages[i + 1]].forEach((p, half) => {
+      if (!p) return;
+      const ox = half * A5W;
+      p.forEach(o => {
+        if (o.k === "r") s += col(o.c) + " rg " + n(ox + o.x) + " " + n(PG.H - o.y - o.h) + " " + n(o.w) + " " + n(o.h) + " re f\n";
+        else if (o.k === "l") s += n(o.lw) + " w " + col(o.c) + " RG " + (o.d ? "[" + o.d.join(" ") + "] 0 d " : "") +
+          n(ox + o.x1) + " " + n(PG.H - o.y1) + " m " + n(ox + o.x2) + " " + n(PG.H - o.y2) + " l S" + (o.d ? " [] 0 d" : "") + "\n";
+        else s += "BT /" + FN[o.f] + " " + n(o.s) + " Tf " + col(o.c) + " rg " + n(ox + o.x) + " " + n(PG.H - o.y) + " Td " + pdfStr(o.t) + " Tj ET\n";
+      });
+    });
+    s += "0.4 w 0.55 0.55 0.55 RG [3 3] 0 d " + n(A5W) + " 0 m " + n(A5W) + " " + n(PG.H) + " l S [] 0 d\n";   // trait de coupe
+    sheets.push(s);
+  }
+  const objs = [], add = s => (objs.push(s), objs.length);
+  add("<< /Type /Catalog /Pages 2 0 R >>");
+  add("");
+  const fonts = ["Helvetica", "Helvetica-Bold", "Helvetica-Oblique", "Helvetica-BoldOblique"]
+    .map(b => add("<< /Type /Font /Subtype /Type1 /BaseFont /" + b + " /Encoding /WinAnsiEncoding >>"));
+  const res = "<< /Font << " + fonts.map((id, i) => "/F" + (i + 1) + " " + id + " 0 R").join(" ") + " >> >>";
+  const kids = sheets.map(s => {
+    const c = add("<< /Length " + s.length + " >>\nstream\n" + s + "endstream");
+    return add("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + n(PG.W) + " " + n(PG.H) + "] /Resources " + res + " /Contents " + c + " 0 R >>");
+  });
+  objs[1] = "<< /Type /Pages /Kids [" + kids.map(k => k + " 0 R").join(" ") + "] /Count " + kids.length + " >>";
+  const info = add("<< /Title " + pdfStr(title) + " /Producer (Carnet de vol) >>");
+  let out = "%PDF-1.4\n%âãÏÓ\n";
+  const offs = [];
+  objs.forEach((o, i) => { offs.push(out.length); out += (i + 1) + " 0 obj\n" + o + "\nendobj\n"; });
+  const xref = out.length;
+  out += "xref\n0 " + (objs.length + 1) + "\n0000000000 65535 f \n" + offs.map(o => String(o).padStart(10, "0") + " 00000 n \n").join("") +
+    "trailer\n<< /Size " + (objs.length + 1) + " /Root 1 0 R /Info " + info + " 0 R >>\nstartxref\n" + xref + "\n%%EOF\n";
+  const b = new Uint8Array(out.length);
+  for (let i = 0; i < out.length; i++) b[i] = out.charCodeAt(i) & 255;
+  return b;
+}
+function releveBlob(ym){
+  return new Blob([pdfBytes(buildReleve(ym), "Relevé d'activité aéronautique, " + ymLabel(ym))], {type: "application/pdf"});
+}
+function ymLabel(ym){ const [y, m] = ym.split("-").map(Number); return cap(new Date(y, m - 1, 1).toLocaleDateString("fr-FR", {month: "long", year: "numeric"})); }
+function ymEnd(ym){ const [y, m] = ym.split("-").map(Number); return isoDate(new Date(y, m, 0)); }
 function aggPrint(list){
   const r = {n: 0, total: 0, jour: 0, voltac: 0, nuit: 0, sil: 0, vtn: 0, vsv: 0, simN: 0, simT: 0, proc: {}, procS: {}, tirs: {}, types: {}};
   list.forEach(f => {
@@ -1535,166 +1783,15 @@ function aggPrint(list){
   });
   return r;
 }
-function recapHTML(ym, month, year){
-  const y = ym.slice(0, 4), m = aggPrint(month), a = aggPrint(year);
-  const mName = cap(new Date(+y, +ym.slice(5, 7) - 1, 1).toLocaleDateString("fr-FR", {month: "long"}));
-  const pct = (v, t) => t ? " <small>(" + Math.round(v / t * 100) + " %)</small>" : "";
-  const row = (l, u, v) => "<tr><td>" + l + '</td><td class="n">' + u + '</td><td class="n">' + v + "</td></tr>";
-  const head = t => "<thead><tr><th>" + t + "</th><th>" + mName + "</th><th>Cumul " + y + "</th></tr></thead>";
-  const types = Object.keys(a.types).sort((p, q) => a.types[q] - a.types[p]);
-  const left = '<table class="rc">' + head("Heures de vol") + "<tbody>" +
-    row("Vols", m.n, a.n) +
-    row("<b>Total</b>", "<b>" + fmtDec(m.total) + "</b>", "<b>" + fmtDec(a.total) + "</b>") +
-    row("Jour", fmtDec(m.jour) + pct(m.jour, m.total), fmtDec(a.jour) + pct(a.jour, a.total)) +
-    row("dont VOLTAC", fmtDec(m.voltac), fmtDec(a.voltac)) +
-    row("Nuit", fmtDec(m.nuit) + pct(m.nuit, m.total), fmtDec(a.nuit) + pct(a.nuit, a.total)) +
-    row("dont SIL", fmtDec(m.sil), fmtDec(a.sil)) +
-    row("dont VTN", fmtDec(m.vtn), fmtDec(a.vtn)) +
-    row("VSV", fmtDec(m.vsv), fmtDec(a.vsv)) +
-    types.map(t => row(esc(t), fmtDec(m.types[t] || 0), fmtDec(a.types[t]))).join("") +
-    row("Simulateur <small>(séances)</small>", fmtDec(m.simT) + " <small>(" + m.simN + ")</small>", fmtDec(a.simT) + " <small>(" + a.simN + ")</small>") +
-    "</tbody></table>";
-  const pn = [...new Set(DB.settings.procedures.concat(Object.keys(a.proc), Object.keys(a.procS)))].filter(k => (a.proc[k] || 0) + (a.procS[k] || 0));
-  const vs = (r, k) => (r.proc[k] || 0) + " / " + (r.procS[k] || 0);
-  const tk = TIR_KEYS.filter(k => a.tirs[k]);
-  const right = '<table class="rc">' + head("Procédures <small>vol / simu</small>") + "<tbody>" +
-      (pn.length ? pn.map(k => row(esc(k), vs(m, k), vs(a, k))).join("") : '<tr><td colspan="3" class="mute">Aucune procédure</td></tr>') + "</tbody></table>" +
-    '<table class="rc">' + head("Munitions tirées") + "<tbody>" +
-      (tk.length ? tk.map(k => row(ARMES.find(x => k.startsWith(x[0]))[1] + (k.endsWith("J") ? " jour" : " nuit"), m.tirs[k] || 0, a.tirs[k])).join("")
-                 : '<tr><td colspan="3" class="mute">Aucun tir</td></tr>') + "</tbody></table>";
-  return '<div class="blk"><div class="cap">Récapitulatif</div><div class="recap">' + left + "<div>" + right + "</div></div></div>";
-}
-function notesHTML(ym, month, year){
-  const end = ymEnd(ym), y = ym.slice(0, 4);
-  const labelOf = f => [ctrlText(f).replace(/\bPU\b/, f.simu ? "PU simulateur" : "PU en vol")].concat(f.simu && (f.tests || []).length ? ["(simulateur)"] : []).join(" ");
-  const mItems = month.filter(f => (f.tests || []).length || f.pu).map(f => frDate(f.date).slice(0, 5) + " " + esc(labelOf(f)));
-  const lastIn = pred => year.slice().sort((p, q) => q.date.localeCompare(p.date)).find(pred);
-  const yItems = TESTS.map(([k, l]) => [l, lastIn(f => !f.simu && (f.tests || []).includes(k))])
-    .concat([["PU en vol", lastIn(f => !f.simu && f.pu)], ["PU simulateur", lastIn(f => f.simu && f.pu)]])
-    .filter(x => x[1]).map(([l, f]) => l + " " + frDate(f.date).slice(0, 5));
-  const cut = isoDate(new Date(Date.parse(end + "T12:00:00") - 365 * 864e5));
-  const h12 = sumMin(DB.flights.filter(f => !f.simu && f.date > cut && f.date <= end), "total");
-  const obj = +DB.settings.objectif12 || 0;
-  return '<div class="blk notes">' +
-    "<p><b>Contrôles du mois :</b> " + (mItems.length ? mItems.join(", ") : "aucun") + ".</p>" +
-    "<p><b>Derniers contrôles en " + y + " :</b> " + (yItems.length ? yItems.join(", ") : "aucun") + ".</p>" +
-    "<p><b>12 mois glissants au " + frDate(end) + " :</b> " + fmtDec(h12) + " h de vol réel" + (obj ? " sur un objectif de " + String(obj).replace(".", ",") + " h" : "") + ".</p></div>";
-}
-function buildPrintPages(ym){
-  const byDate = (p, q) => p.date.localeCompare(q.date) || (p.createdAt || "").localeCompare(q.createdAt || "");
-  const month = DB.flights.filter(f => f.date.startsWith(ym)).sort(byDate);
-  const vols = month.filter(f => !f.simu), sims = month.filter(f => f.simu);
-  const end = ymEnd(ym), year = DB.flights.filter(f => f.date.startsWith(ym.slice(0, 4)) && f.date <= end);
-  const blocks = [];
-  vols.forEach(f => blocks.push({t: "vols", h: prRow(f)}));
-  if (vols.length) blocks.push({t: "vols", h: prTotal("Total des vols du mois", vols)});
-  sims.forEach(f => blocks.push({t: "sims", h: prRow(f)}));
-  if (sims.length) blocks.push({t: "sims", h: prTotal("Total simulateur du mois", sims)});
-  if (!month.length) blocks.push({h: '<p class="blk mute">Aucun vol ni séance simulateur ce mois-ci.</p>'});
-  blocks.push({h: recapHTML(ym, month, year)});
-  blocks.push({h: notesHTML(ym, month, year)});
-  /* certification et signatures : bloc indivisible, toujours en fin de relevé */
-  blocks.push({h: '<div class="blk sign"><p class="cert">Certifié exact et conforme au registre des services aériens</p>' +
-    '<div class="sig"><div>Signature du commandant d\'unité</div><div>Signature de l\'intéressé</div></div></div>'});
-
-  const host = $("pvMeasure"), name = DB.settings.printName || "";
-  const caps = {vols: "Vols", sims: "Séances simulateur"}, started = {}, pages = [];
-  let content = null, tbody = null, tkind = null;
-  host.innerHTML = "";
-  const newPage = () => {
-    const pg = document.createElement("div");
-    pg.className = "a5";
-    pg.innerHTML = (pages.length
-      ? '<div class="a5-head sm"><b>' + ymLabel(ym) + ", suite</b><span>" + esc(name) + "</span></div>"
-      : '<div class="a5-head"><div><div class="k">Relevé d\'activité aéronautique</div><h1>' + ymLabel(ym) + '</h1></div><div class="r">' +
-        (name ? "<b>" + esc(name) + "</b><br>" : "") + "Édité le " + frDate(todayISO()) + "</div></div>") +
-      '<div class="a5c"></div><div class="a5-foot"><span>Carnet de vol</span><span class="pg"></span></div>';
-    host.appendChild(pg); pages.push(pg);
-    content = pg.querySelector(".a5c"); tbody = null; tkind = null;
-  };
-  // hauteur réellement occupée, avec ~4 mm de marge de sécurité pour l'impression
-  /* toute case dont le texte dépasse est réduite pas à pas jusqu'à tenir dans sa largeur
-     (mesure faite sur l'appareil lui-même, donc avec ses propres polices) */
-  /* Le débordement est mesuré sur le texte lui-même (Range), car Safari ne le
-     signale pas via scrollWidth sur les cases de tableau. */
-  const overflows = c => {
-    const cs = getComputedStyle(c), r = c.getBoundingClientRect();
-    const inner = r.width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - parseFloat(cs.borderLeftWidth) - parseFloat(cs.borderRightWidth);
-    const rg = document.createRange(); rg.selectNodeContents(c);
-    const t = rg.getBoundingClientRect();
-    return t.width > inner + 0.3 || c.scrollWidth > c.clientWidth + 0.5;
-  };
-  const fitCells = root => {
-    if (!root) return;
-    root.querySelectorAll("td, th").forEach(c => {
-      let fs = parseFloat(getComputedStyle(c).fontSize), n = 0;
-      while (overflows(c) && n++ < 16){ fs *= 0.93; c.style.fontSize = fs.toFixed(2) + "px"; }
-    });
-  };
-  const over = () => {
-    const last = content.lastElementChild;
-    return !!last && last.getBoundingClientRect().bottom - content.getBoundingClientRect().top > content.clientHeight - 15;
-  };
-  const openTable = t => {
-    content.insertAdjacentHTML("beforeend", '<div class="blk tb"><div class="cap">' + caps[t] + (started[t] ? ", suite" : "") + '</div><table class="fl">' + PR_HEAD + "<tbody></tbody></table></div>");
-    tbody = content.lastElementChild.querySelector("tbody"); tkind = t;
-    fitCells(content.lastElementChild.querySelector("thead"));
-  };
-  newPage();
-  blocks.forEach(b => {
-    if (b.t){
-      if (tkind !== b.t) openTable(b.t);
-      tbody.insertAdjacentHTML("beforeend", b.h); fitCells(tbody.lastElementChild);
-      if (over() && !(tbody.children.length === 1 && content.children.length === 1)){
-        tbody.lastElementChild.remove();
-        if (!tbody.children.length) tbody.closest(".tb").remove();
-        newPage(); openTable(b.t);
-        tbody.insertAdjacentHTML("beforeend", b.h); fitCells(tbody.lastElementChild);
-      }
-      started[b.t] = true;
-    } else {
-      tbody = null; tkind = null;
-      content.insertAdjacentHTML("beforeend", b.h); fitCells(content.lastElementChild);
-      if (over() && content.children.length > 1){
-        content.lastElementChild.remove();
-        newPage();
-        content.insertAdjacentHTML("beforeend", b.h); fitCells(content.lastElementChild);
-      }
-    }
-  });
-  pages.forEach((pg, i) => { pg.querySelector(".pg").textContent = "Page " + (i + 1) + " / " + pages.length; });
-  return pages;
-}
-/* l'aperçu est réduit pour tenir dans la largeur de l'écran (148 mm = 559 px CSS) */
-function fitPreview(){
-  const vw = document.documentElement.clientWidth || window.innerWidth;
-  $("pvPages").style.setProperty("--s", Math.min(1, (vw - 24) / (148 * 96 / 25.4)).toFixed(4));
-}
-function openPrintView(ym){
-  const pages = buildPrintPages(ym), box = $("pvPages");
-  fitPreview();
-  box.innerHTML = "";
-  pages.forEach(pg => { const w = document.createElement("div"); w.className = "pvp"; w.appendChild(pg); box.appendChild(w); });
-  $("pvTitle").textContent = ymLabel(ym);
-  UI.printTitle = "Carnet de vol " + ymLabel(ym);
-  $("printView").hidden = false;
-  document.body.classList.add("lock");
-}
-function closePrintView(){
-  $("printView").hidden = true; $("pvPages").innerHTML = "";
-  document.body.classList.remove("lock");
-}
 $("prMonth").addEventListener("change", e => { UI.prMonth = e.target.value; });
 $("prName").addEventListener("change", () => { DB.settings.printName = UP($("prName").value.trim()).slice(0, 80); $("prName").value = DB.settings.printName; persist(); });
-$("prGo").addEventListener("click", () => openPrintView($("prMonth").value));
-$("pvClose").addEventListener("click", closePrintView);
-$("pvPrint").addEventListener("click", () => {
-  const t = document.title;
-  document.title = UI.printTitle || t;          // nom proposé pour le PDF
-  window.print();
-  setTimeout(() => { document.title = t; }, 1500);
+$("prGo").addEventListener("click", async () => {
+  const ym = $("prMonth").value;
+  let blob;
+  try { blob = releveBlob(ym); } catch (e){ toast("Création du PDF impossible"); return; }
+  const ok = await shareOrDownload(blob, "Releve-" + ym + ".pdf");
+  if (ok) toast("Relevé " + ymLabel(ym) + " exporté");
 });
-window.addEventListener("resize", () => { if (!$("printView").hidden) fitPreview(); });
 
 /* ---------- démarrage ---------- */
 setView("vols");
